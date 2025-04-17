@@ -1,0 +1,45 @@
+{
+  "firestore": {
+    "rules": "firestore/firestore.rules",
+    "indexes": "firestore/firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "caltrack-12b16",
+          "appId": "1:1064761378805:android:7bbc43710457a219aac2bc",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "caltrack-12b16",
+          "appId": "1:1064761378805:ios:b7ab3ff02f90b6c6aac2bc",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "caltrack-12b16",
+          "appId": "1:1064761378805:ios:b7ab3ff02f90b6c6aac2bc",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "caltrack-12b16",
+          "configurations": {
+            "android": "1:1064761378805:android:7bbc43710457a219aac2bc",
+            "ios": "1:1064761378805:ios:b7ab3ff02f90b6c6aac2bc",
+            "macos": "1:1064761378805:ios:b7ab3ff02f90b6c6aac2bc",
+            "web": "1:1064761378805:web:bc815e15caf76617aac2bc",
+            "windows": "1:1064761378805:web:b9f84e771b65af3baac2bc"
+          }
+        }
+      }
+    }
+  }
+}
