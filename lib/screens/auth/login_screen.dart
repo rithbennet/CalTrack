@@ -15,7 +15,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isGoogleLoading = false;
+  bool _isResetLoading = false;
   String _errorMessage = '';
+  String _successMessage = '';
   final AuthService _authService = AuthService();
 
   @override
@@ -74,6 +76,41 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _resetPassword() async {
+    // Check if email is provided
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter your email address to reset password';
+        _successMessage = '';
+      });
+      return;
+    }
+
+    setState(() {
+      _isResetLoading = true;
+      _errorMessage = '';
+      _successMessage = '';
+    });
+
+    try {
+      await _authService.resetPassword(email);
+      setState(() {
+        _successMessage = 'Password reset email sent to $email';
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isResetLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,13 +158,34 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 8.0),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _isResetLoading ? null : _resetPassword,
+                  child:
+                      _isResetLoading
+                          ? const SizedBox(
+                            height: 15,
+                            width: 15,
+                            child: CircularProgressIndicator(strokeWidth: 2.0),
+                          )
+                          : const Text('Forgot Password?'),
+                ),
+              ),
               if (_errorMessage.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Text(
                     _errorMessage,
                     style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+              if (_successMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    _successMessage,
+                    style: const TextStyle(color: Colors.green),
                   ),
                 ),
               ElevatedButton(
