@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:caltrack/view/auth_wrapper.dart';
 import 'package:caltrack/viewmodels/auth_view_model.dart';
+import 'package:caltrack/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,10 +29,10 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'CalTrack',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme(),
+        darkTheme: AppTheme.darkTheme(),
+        themeMode:
+            ThemeMode.dark, // Use system theme or change to .light or .dark
         home: const AuthWrapper(),
       ),
     );
