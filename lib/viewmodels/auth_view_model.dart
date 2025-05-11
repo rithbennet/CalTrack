@@ -63,7 +63,15 @@ class AuthViewModel extends ChangeNotifier {
       case 'network-request-failed':
         return 'Network error. Please check your connection.';
       case 'invalid-credential':
-        return 'No user found with these credentials. Please check your email or register first.';
+        return 'The email or password is incorrect. Please try again or register if you\'re a new user.';
+      case 'email-already-in-use':
+        return 'This email is already registered. Please use a different email or try logging in.';
+      case 'weak-password':
+        return 'The password is too weak. Please use a stronger password.';
+      case 'account-exists-with-different-credential':
+        return 'An account already exists with the same email but different sign-in credentials.';
+      case 'requires-recent-login':
+        return 'This operation requires recent authentication. Please log in again before retrying.';
       default:
         return 'Authentication failed: $code';
     }
