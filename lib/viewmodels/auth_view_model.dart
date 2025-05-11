@@ -50,8 +50,6 @@ class AuthViewModel extends ChangeNotifier {
   // Method to handle error messages with specific Firebase error codes
   String _getErrorMessage(String code) {
     switch (code) {
-      case 'user-not-found':
-        return 'No user found with this email. Please register first.';
       case 'wrong-password':
         return 'Incorrect password. Please try again.';
       case 'invalid-email':
@@ -64,6 +62,8 @@ class AuthViewModel extends ChangeNotifier {
         return 'Email/password accounts are not enabled.';
       case 'network-request-failed':
         return 'Network error. Please check your connection.';
+      case 'invalid-credential':
+        return 'No user found with these credentials. Please check your email or register first.';
       default:
         return 'Authentication failed: $code';
     }
