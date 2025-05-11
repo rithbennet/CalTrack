@@ -18,6 +18,9 @@ class AuthService {
         email: email,
         password: password,
       );
+    } on FirebaseAuthException {
+      // Don't catch here, let it propagate to maintain the exception type
+      rethrow;
     } catch (e) {
       rethrow;
     }
@@ -33,6 +36,9 @@ class AuthService {
         email: email,
         password: password,
       );
+    } on FirebaseAuthException {
+      // Don't catch here, let it propagate to maintain the exception type
+      rethrow;
     } catch (e) {
       rethrow;
     }
@@ -74,6 +80,9 @@ class AuthService {
   Future<void> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException {
+      // Don't catch here, let it propagate to maintain the exception type
+      rethrow;
     } catch (e) {
       rethrow;
     }
