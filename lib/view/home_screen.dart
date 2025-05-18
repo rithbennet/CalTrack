@@ -80,10 +80,10 @@ class HomeScreen extends StatelessWidget {
                               TextButton(
                                 onPressed:
                                     () => Navigator.of(context).pop(true),
-                                child: const Text('Logout'),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.red,
                                 ),
+                                child: const Text('Logout'),
                               ),
                             ],
                             backgroundColor: Colors.grey[900],
@@ -100,20 +100,27 @@ class HomeScreen extends StatelessWidget {
                     );
 
                     // If user confirms logout
-                    if (shouldLogout == true) {
+                    if (shouldLogout == true && context.mounted) {
                       // Get the AuthViewModel from Provider
                       final authViewModel = Provider.of<AuthViewModel>(
                         context,
                         listen: false,
                       );
 
-                      // Show a loading indicator
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      // Capture the ScaffoldMessengerState before the async operation
+                      final scaffoldMessengerState = ScaffoldMessenger.of(
+                        context,
+                      );
+
+                      // Show a loading indicator with the captured state
+                      scaffoldMessengerState.showSnackBar(
                         const SnackBar(content: Text('Logging out...')),
                       );
 
                       // Call the signOut method from AuthViewModel
                       await authViewModel.signOut();
+
+                      // No more context usage after the await
                     }
                   },
                   icon: const Icon(Icons.logout),
@@ -172,7 +179,7 @@ class HomeScreen extends StatelessWidget {
                               strokeWidth: 12,
                               backgroundColor: Colors.deepOrange.shade800,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white.withOpacity(0.8),
+                                Colors.white.withAlpha(204),
                               ),
                             ),
                           ),
@@ -394,7 +401,7 @@ class HomeScreen extends StatelessWidget {
                 child: Container(
                   height: 120,
                   width: double.infinity,
-                  color: Colors.deepOrange.withOpacity(0.3),
+                  color: Colors.deepOrange.withAlpha(76),
                   child: const Icon(
                     Icons.restaurant,
                     color: Colors.deepOrange,
