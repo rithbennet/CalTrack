@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:caltrack/viewmodels/auth_view_model.dart';
+import 'package:caltrack/view/firestore_test_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -127,6 +128,26 @@ class HomeScreen extends StatelessWidget {
                   label: const Text('Logout'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepOrange,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Firestore Test button
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FirestoreTestScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.storage),
+                  label: const Text('Test Firestore'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                   ),
                 ),
