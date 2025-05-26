@@ -54,8 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final greeting = userViewModel.getGreeting();
 
-        // Placeholder values for calorie tracking (to be implemented later)
-        const dailyTarget = 2000;
+        // Get actual calorie target from user profile
+        final dailyTarget = userProfile?.effectiveDailyCalorieTarget ?? 2000;
         const currentCalories = 500; // This will come from calorie tracking
         final percentage = ((currentCalories / dailyTarget) * 100).round();
 
@@ -147,66 +147,174 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Daily plan card
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.deepOrange,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
+                    // Swipable cards: My Plan for Today & Calories Progress
+                    SizedBox(
+                      height: 185, // Increased height to fix overflow
+                      child: PageView(
+                        controller: PageController(viewportFraction: 0.92),
                         children: [
-                          // Left side - text
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          // My Plan for Today Card
+                          Container(
+                            margin: const EdgeInsets.only(right: 12),
+                            padding: const EdgeInsets.all(
+                              20,
+                            ), // Reduced padding for better fit
+                            decoration: BoxDecoration(
+                              color: Colors.deepOrange,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
                               children: [
-                                const Text(
-                                  'My Plan\nFor Today',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
+                                // Left side - text
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        'My Plan\nFor Today',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        userProfile?.effectiveDailyCalorieTarget !=
+                                                null
+                                            ? 'Daily Target: $dailyTarget cal'
+                                            : 'Complete profile to set target',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontStyle:
+                                              userProfile?.effectiveDailyCalorieTarget ==
+                                                      null
+                                                  ? FontStyle.italic
+                                                  : FontStyle.normal,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Daily Target: $dailyTarget cal',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                ),
+                                // Right side - progress circle or setup prompt
+                                userProfile?.effectiveDailyCalorieTarget != null
+                                    ? Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 100,
+                                          height: 100,
+                                          child: CircularProgressIndicator(
+                                            value: percentage / 100,
+                                            strokeWidth: 12,
+                                            backgroundColor:
+                                                Colors.deepOrange.shade800,
+                                            valueColor:
+                                                const AlwaysStoppedAnimation<
+                                                  Color
+                                                >(Colors.white),
+                                          ),
+                                        ),
+                                        Text(
+                                          '$percentage%',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                    : GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) =>
+                                                    const ProfileScreen(),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.2),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.settings,
+                                          color: Colors.white,
+                                          size: 40,
+                                        ),
+                                      ),
+                                    ),
                               ],
                             ),
                           ),
-
-                          // Right side - progress circle
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              SizedBox(
-                                width: 100,
-                                height: 100,
-                                child: CircularProgressIndicator(
-                                  value: percentage / 100,
-                                  strokeWidth: 12,
-                                  backgroundColor: Colors.deepOrange.shade800,
-                                  valueColor:
-                                      const AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
+                          // Calories Eaten / Goal Card
+                          Container(
+                            margin: const EdgeInsets.only(left: 12),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Calories Eaten',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        '$currentCalories / $dailyTarget cal',
+                                        style: const TextStyle(
+                                          color: Colors.deepOrange,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      LinearProgressIndicator(
+                                        value: (currentCalories / dailyTarget)
+                                            .clamp(0.0, 1.0),
+                                        backgroundColor: Colors.grey[800],
+                                        valueColor:
+                                            const AlwaysStoppedAnimation<Color>(
+                                              Colors.deepOrange,
+                                            ),
+                                        minHeight: 10,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                '$percentage%',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
+                                const SizedBox(width: 12),
+                                Icon(
+                                  Icons.local_fire_department,
+                                  color: Colors.deepOrange,
+                                  size: 48,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -303,11 +411,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             userProfile?.createdAt != null
                                 ? _formatDate(userProfile!.createdAt!)
                                 : 'Recently joined',
-                          ),
-                          const SizedBox(height: 16),
-                          _buildInfoRow(
-                            'User ID',
-                            currentUser?.id ?? 'Unknown',
                           ),
                         ],
                       ),
