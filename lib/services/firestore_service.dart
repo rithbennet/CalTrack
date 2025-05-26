@@ -31,100 +31,121 @@ class FirestoreService {
     }
   }
 
-  // Create user profile
-  Future<void> createUserProfile({
-    required String userId,
-    required String email,
-    String? displayName,
-    String? photoURL,
+  // GENERIC CRUD OPERATIONS
+
+  /// Creates a document in the specified collection
+  Future<void> createDocument({
+    required String collection,
+    required String documentId,
+    required Map<String, dynamic> data,
   }) async {
     try {
-      await _db.collection('users').doc(userId).set({
-        'email': email,
-        'displayName': displayName,
-        'photoURL': photoURL,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      data['createdAt'] = FieldValue.serverTimestamp();
+      data['updatedAt'] = FieldValue.serverTimestamp();
+
+      await _db.collection(collection).doc(documentId).set(data);
     } catch (e) {
-      print('Error creating user profile: $e');
+      print('Error creating document in $collection: $e');
       rethrow;
     }
   }
 
-  // Get user profile
-  Future<Map<String, dynamic>?> getUserProfile(String userId) async {
+  /// Gets a document from the specified collection
+  Future<Map<String, dynamic>?> getDocument({
+    required String collection,
+    required String documentId,
+  }) async {
     try {
-      DocumentSnapshot doc = await _db.collection('users').doc(userId).get();
-      return doc.exists ? doc.data() as Map<String, dynamic>? : null;
-    } catch (e) {
-      print('Error getting user profile: $e');
+      DocumentSnapshot doc =
+          await _db.collection(collection).doc(documentId).get();
+      if (doc.exists) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }
       return null;
+    } catch (e) {
+      print('Error getting document from $collection: $e');
+      rethrow;
     }
   }
 
-  // Update user profile
-  Future<void> updateUserProfile(
-    String userId,
-    Map<String, dynamic> data,
-  ) async {
+  /// Updates a document in the specified collection
+  Future<void> updateDocument({
+    required String collection,
+    required String documentId,
+    required Map<String, dynamic> data,
+  }) async {
     try {
       data['updatedAt'] = FieldValue.serverTimestamp();
-      await _db.collection('users').doc(userId).update(data);
+      await _db.collection(collection).doc(documentId).update(data);
     } catch (e) {
-      print('Error updating user profile: $e');
+      print('Error updating document in $collection: $e');
       rethrow;
     }
   }
 
-  // Add a sample calorie entry
-  Future<String?> addCalorieEntry({
-    required String userId,
-    required String foodName,
-    required double calories,
-    required DateTime date,
-    String? notes,
+  /// Deletes a document from the specified collection
+  Future<void> deleteDocument({
+    required String collection,
+    required String documentId,
   }) async {
     try {
-      DocumentReference docRef = await _db
-          .collection('users')
-          .doc(userId)
-          .collection('calorie_entries')
-          .add({
-            'foodName': foodName,
-            'calories': calories,
-            'date': Timestamp.fromDate(date),
-            'notes': notes,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-      return docRef.id;
+      await _db.collection(collection).doc(documentId).delete();
     } catch (e) {
-      print('Error adding calorie entry: $e');
-      return null;
+      print('Error deleting document from $collection: $e');
+      rethrow;
     }
   }
 
-  // Get calorie entries for a specific date
-  Future<List<Map<String, dynamic>>> getCalorieEntriesForDate(
-    String userId,
-    DateTime date,
-  ) async {
+  /// Checks if a document exists in the specified collection
+  Future<bool> documentExists({
+    required String collection,
+    required String documentId,
+  }) async {
     try {
-      DateTime startOfDay = DateTime(date.year, date.month, date.day);
-      DateTime endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+      DocumentSnapshot doc =
+          await _db.collection(collection).doc(documentId).get();
+      return doc.exists;
+    } catch (e) {
+      print('Error checking document existence in $collection: $e');
+      return false;
+    }
+  }
 
-      QuerySnapshot snapshot =
-          await _db
-              .collection('users')
-              .doc(userId)
-              .collection('calorie_entries')
-              .where(
-                'date',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
-              )
-              .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
-              .orderBy('date', descending: true)
-              .get();
+  /// Streams a document for real-time updates
+  Stream<Map<String, dynamic>?> streamDocument({
+    required String collection,
+    required String documentId,
+  }) {
+    return _db.collection(collection).doc(documentId).snapshots().map((doc) {
+      if (doc.exists) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }
+      return null;
+    });
+  }
+
+  /// Gets multiple documents from a collection with optional query
+  Future<List<Map<String, dynamic>>> getDocuments({
+    required String collection,
+    Query Function(Query query)? queryBuilder,
+    int? limit,
+  }) async {
+    try {
+      Query query = _db.collection(collection);
+
+      if (queryBuilder != null) {
+        query = queryBuilder(query);
+      }
+
+      if (limit != null) {
+        query = query.limit(limit);
+      }
+
+      QuerySnapshot snapshot = await query.get();
 
       return snapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -132,67 +153,92 @@ class FirestoreService {
         return data;
       }).toList();
     } catch (e) {
-      print('Error getting calorie entries: $e');
-      return [];
+      print('Error getting documents from $collection: $e');
+      rethrow;
     }
   }
 
-  // Delete calorie entry
-  Future<bool> deleteCalorieEntry(String userId, String entryId) async {
+  /// Streams multiple documents for real-time updates
+  Stream<List<Map<String, dynamic>>> streamDocuments({
+    required String collection,
+    Query Function(Query query)? queryBuilder,
+    int? limit,
+  }) {
     try {
-      await _db
-          .collection('users')
-          .doc(userId)
-          .collection('calorie_entries')
-          .doc(entryId)
-          .delete();
-      return true;
-    } catch (e) {
-      print('Error deleting calorie entry: $e');
-      return false;
-    }
-  }
+      Query query = _db.collection(collection);
 
-  // Stream of user's calorie entries for real-time updates
-  Stream<List<Map<String, dynamic>>> streamCalorieEntriesForDate(
-    String userId,
-    DateTime date,
-  ) {
-    DateTime startOfDay = DateTime(date.year, date.month, date.day);
-    DateTime endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
-
-    return _db
-        .collection('users')
-        .doc(userId)
-        .collection('calorie_entries')
-        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
-        .orderBy('date', descending: true)
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            Map<String, dynamic> data = doc.data();
-            data['id'] = doc.id;
-            return data;
-          }).toList();
-        });
-  }
-
-  // Get total calories for a specific date
-  Future<double> getTotalCaloriesForDate(String userId, DateTime date) async {
-    try {
-      List<Map<String, dynamic>> entries = await getCalorieEntriesForDate(
-        userId,
-        date,
-      );
-      double total = 0;
-      for (var entry in entries) {
-        total += (entry['calories'] as num).toDouble();
+      if (queryBuilder != null) {
+        query = queryBuilder(query);
       }
-      return total;
+
+      if (limit != null) {
+        query = query.limit(limit);
+      }
+
+      return query.snapshots().map((snapshot) {
+        return snapshot.docs.map((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+      });
     } catch (e) {
-      print('Error calculating total calories: $e');
-      return 0;
+      print('Error streaming documents from $collection: $e');
+      rethrow;
+    }
+  }
+
+  /// Creates a document with auto-generated ID
+  Future<String> createDocumentWithAutoId({
+    required String collection,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      data['createdAt'] = FieldValue.serverTimestamp();
+      data['updatedAt'] = FieldValue.serverTimestamp();
+
+      DocumentReference docRef = await _db.collection(collection).add(data);
+      return docRef.id;
+    } catch (e) {
+      print('Error creating document with auto ID in $collection: $e');
+      rethrow;
+    }
+  }
+
+  /// Batch operations for multiple documents
+  Future<void> batchWrite(List<Map<String, dynamic>> operations) async {
+    try {
+      WriteBatch batch = _db.batch();
+
+      for (var operation in operations) {
+        String type = operation['type']; // 'create', 'update', 'delete'
+        String collection = operation['collection'];
+        String documentId = operation['documentId'];
+
+        DocumentReference docRef = _db.collection(collection).doc(documentId);
+
+        switch (type) {
+          case 'create':
+            Map<String, dynamic> data = operation['data'];
+            data['createdAt'] = FieldValue.serverTimestamp();
+            data['updatedAt'] = FieldValue.serverTimestamp();
+            batch.set(docRef, data);
+            break;
+          case 'update':
+            Map<String, dynamic> data = operation['data'];
+            data['updatedAt'] = FieldValue.serverTimestamp();
+            batch.update(docRef, data);
+            break;
+          case 'delete':
+            batch.delete(docRef);
+            break;
+        }
+      }
+
+      await batch.commit();
+    } catch (e) {
+      print('Error performing batch operations: $e');
+      rethrow;
     }
   }
 }
