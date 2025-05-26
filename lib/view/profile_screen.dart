@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:caltrack/viewmodels/auth_view_model.dart';
 import 'package:caltrack/viewmodels/user_view_model.dart';
 import 'package:caltrack/models/user_model.dart';
+import 'package:caltrack/utils/calorie_calculator.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -40,6 +41,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   bool _isEditing = false;
   bool _isSaving = false;
+  bool _useAutomaticCalories = false;
 
   @override
   void initState() {
@@ -64,8 +66,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _weightController.text = userProfile?.weight?.toString() ?? '';
       _heightController.text = userProfile?.height?.toString() ?? '';
       _ageController.text = userProfile?.age?.toString() ?? '';
-      _dailyCalorieTargetController.text =
-          userProfile?.dailyCalorieTarget?.toString() ?? '';
+
+      // Determine if user is using automatic calories
+      // If they have no manual target but can calculate automatic, default to automatic
+      if (userProfile?.dailyCalorieTarget == null &&
+          userProfile?.canCalculateCalories == true) {
+        _useAutomaticCalories = true;
+        _dailyCalorieTargetController.text =
+            userProfile?.recommendedDailyCalorieTarget?.toString() ?? '';
+      } else {
+        _useAutomaticCalories = false;
+        _dailyCalorieTargetController.text =
+            userProfile?.dailyCalorieTarget?.toString() ?? '';
+      }
 
       // Set dropdown values if available
       if (userProfile?.gender != null) {
@@ -116,9 +129,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         gender: _selectedGender,
         activityLevel: _selectedActivityLevel,
         goal: _selectedGoal,
-        dailyCalorieTarget: int.tryParse(
-          _dailyCalorieTargetController.text.trim(),
-        ),
+        dailyCalorieTarget:
+            _useAutomaticCalories
+                ? null
+                : int.tryParse(_dailyCalorieTargetController.text.trim()),
         isOnboardingCompleted:
             userViewModel.userProfile?.isOnboardingCompleted ?? true,
       );
@@ -154,6 +168,152 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     }
+  }
+
+  void _updateAutomaticCalories() {
+    if (!_useAutomaticCalories) return;
+
+    // Try to calculate calories based on current form data
+    try {
+      final weight = double.tryParse(_weightController.text);
+      final height = double.tryParse(_heightController.text);
+      final age = int.tryParse(_ageController.text);
+
+      if (weight != null && height != null && age != null) {
+        final calculatedCalories = CalorieCalculator.calculateCompleteTarget(
+          weight: weight,
+          height: height,
+          age: age,
+          gender: _selectedGender,
+          activityLevel: _selectedActivityLevel,
+          goal: _selectedGoal,
+        );
+
+        if (calculatedCalories != null) {
+          _dailyCalorieTargetController.text = calculatedCalories.toString();
+        }
+      }
+    } catch (e) {
+      // If calculation fails, keep the current value
+    }
+  }
+
+  // Helper methods for automatic calorie calculation
+  bool _canShowCalculationDetails() {
+    final weight = double.tryParse(_weightController.text);
+    final height = double.tryParse(_heightController.text);
+    final age = int.tryParse(_ageController.text);
+
+    return weight != null && height != null && age != null;
+  }
+
+  String _getCalculatedBMR() {
+    final weight = double.tryParse(_weightController.text);
+    final height = double.tryParse(_heightController.text);
+    final age = int.tryParse(_ageController.text);
+
+    if (weight == null || height == null || age == null) {
+      return 'N/A';
+    }
+
+    final bmr = CalorieCalculator.calculateBMR(
+      weight: weight,
+      height: height,
+      age: age,
+      gender: _selectedGender,
+    );
+
+    return bmr != null ? '${bmr.round()} cal' : 'N/A';
+  }
+
+  String _getCalculatedTDEE() {
+    final weight = double.tryParse(_weightController.text);
+    final height = double.tryParse(_heightController.text);
+    final age = int.tryParse(_ageController.text);
+
+    if (weight == null || height == null || age == null) {
+      return 'N/A';
+    }
+
+    final bmr = CalorieCalculator.calculateBMR(
+      weight: weight,
+      height: height,
+      age: age,
+      gender: _selectedGender,
+    );
+
+    if (bmr == null) return 'N/A';
+
+    final tdee = CalorieCalculator.calculateTDEE(
+      bmr: bmr,
+      activityLevel: _selectedActivityLevel,
+    );
+
+    return tdee != null ? '${tdee.round()} cal' : 'N/A';
+  }
+
+  String _getGoalAdjustmentText() {
+    switch (_selectedGoal) {
+      case 'Lose Weight':
+        return '-500 cal/day';
+      case 'Gain Weight':
+        return '+500 cal/day';
+      case 'Maintain Weight':
+      default:
+        return '0 cal/day';
+    }
+  }
+
+  String _getCalculatedTarget() {
+    final weight = double.tryParse(_weightController.text);
+    final height = double.tryParse(_heightController.text);
+    final age = int.tryParse(_ageController.text);
+
+    if (weight == null || height == null || age == null) {
+      return 'N/A';
+    }
+
+    final target = CalorieCalculator.calculateCompleteTarget(
+      weight: weight,
+      height: height,
+      age: age,
+      gender: _selectedGender,
+      activityLevel: _selectedActivityLevel,
+      goal: _selectedGoal,
+    );
+
+    return target != null ? '${target} cal/day' : 'N/A';
+  }
+
+  Widget _buildCalculationDetail(
+    String label,
+    String value, {
+    bool isTotal = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 13,
+              fontWeight: isTotal ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: isTotal ? Colors.deepOrange : Colors.grey[300],
+              fontSize: 13,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -358,6 +518,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   controller: _ageController,
                                   hint: 'Enter your age',
                                   keyboardType: TextInputType.number,
+                                  onChanged: (value) {
+                                    if (_useAutomaticCalories && _isEditing) {
+                                      _updateAutomaticCalories();
+                                    }
+                                  },
                                 ),
 
                                 // Gender Field
@@ -415,6 +580,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   keyboardType: TextInputType.numberWithOptions(
                                     decimal: true,
                                   ),
+                                  onChanged: (value) {
+                                    if (_useAutomaticCalories && _isEditing) {
+                                      _updateAutomaticCalories();
+                                    }
+                                  },
                                 ),
 
                                 // Height Field
@@ -425,6 +595,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   keyboardType: TextInputType.numberWithOptions(
                                     decimal: true,
                                   ),
+                                  onChanged: (value) {
+                                    if (_useAutomaticCalories && _isEditing) {
+                                      _updateAutomaticCalories();
+                                    }
+                                  },
                                 ),
                               ],
                             ),
@@ -469,6 +644,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     if (value != null && _isEditing) {
                                       setState(() {
                                         _selectedActivityLevel = value;
+                                        if (_useAutomaticCalories) {
+                                          _updateAutomaticCalories();
+                                        }
                                       });
                                     }
                                   },
@@ -491,17 +669,210 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     if (value != null && _isEditing) {
                                       setState(() {
                                         _selectedGoal = value;
+                                        if (_useAutomaticCalories) {
+                                          _updateAutomaticCalories();
+                                        }
                                       });
                                     }
                                   },
                                 ),
 
-                                // Daily Calorie Target Field
-                                _buildTextField(
-                                  label: 'Daily Calorie Target',
-                                  controller: _dailyCalorieTargetController,
-                                  hint: 'Enter your daily calorie target',
-                                  keyboardType: TextInputType.number,
+                                // Daily Calorie Target Section
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Automatic Toggle
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            'Daily Calorie Target',
+                                            style: TextStyle(
+                                              color: Colors.grey[300],
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        if (_isEditing) ...[
+                                          const SizedBox(width: 10),
+                                          Switch.adaptive(
+                                            value: _useAutomaticCalories,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _useAutomaticCalories = value;
+                                                if (value) {
+                                                  _updateAutomaticCalories();
+                                                }
+                                              });
+                                            },
+                                            activeColor: Colors.deepOrange,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Auto',
+                                            style: TextStyle(
+                                              color:
+                                                  _useAutomaticCalories
+                                                      ? Colors.deepOrange
+                                                      : Colors.grey[500],
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+
+                                    // Calorie Target Field
+                                    TextFormField(
+                                      controller: _dailyCalorieTargetController,
+                                      enabled:
+                                          _isEditing && !_useAutomaticCalories,
+                                      keyboardType: TextInputType.number,
+                                      style: TextStyle(
+                                        color:
+                                            (_isEditing &&
+                                                    !_useAutomaticCalories)
+                                                ? Colors.white
+                                                : Colors.grey[400],
+                                        fontSize: 16,
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText:
+                                            _useAutomaticCalories
+                                                ? 'Automatically calculated'
+                                                : 'Enter your daily calorie target',
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 14,
+                                        ),
+                                        filled: true,
+                                        fillColor:
+                                            _isEditing && !_useAutomaticCalories
+                                                ? Colors.grey[800]
+                                                : Colors.grey[850],
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 16,
+                                            ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Colors.deepOrange,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Colors.red,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Colors.red,
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                      validator: (value) {
+                                        if (!_useAutomaticCalories &&
+                                            (value == null ||
+                                                value.trim().isEmpty)) {
+                                          return 'Please enter a daily calorie target';
+                                        }
+                                        if (!_useAutomaticCalories &&
+                                            int.tryParse(value!.trim()) ==
+                                                null) {
+                                          return 'Please enter a valid number';
+                                        }
+                                        if (!_useAutomaticCalories &&
+                                            int.tryParse(value!.trim())! <= 0) {
+                                          return 'Calories must be greater than 0';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+
+                                    // Calculation Details
+                                    if (_useAutomaticCalories &&
+                                        _canShowCalculationDetails()) ...[
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[850],
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.deepOrange
+                                                .withOpacity(0.3),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Calculation Breakdown',
+                                              style: TextStyle(
+                                                color: Colors.deepOrange,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            _buildCalculationDetail(
+                                              'BMR (Base Metabolic Rate)',
+                                              _getCalculatedBMR(),
+                                            ),
+                                            _buildCalculationDetail(
+                                              'TDEE (Total Daily Energy)',
+                                              _getCalculatedTDEE(),
+                                            ),
+                                            _buildCalculationDetail(
+                                              'Goal Adjustment',
+                                              _getGoalAdjustmentText(),
+                                            ),
+                                            const Divider(
+                                              color: Colors.grey,
+                                              height: 16,
+                                            ),
+                                            _buildCalculationDetail(
+                                              'Daily Target',
+                                              _getCalculatedTarget(),
+                                              isTotal: true,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ],
                             ),
@@ -555,54 +926,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: ElevatedButton(
                               onPressed: () async {
                                 // Show confirmation dialog
-                                final shouldLogout = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    backgroundColor: Colors.grey[900],
-                                    title: const Text(
-                                      'Logout',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    content: const Text(
-                                      'Are you sure you want to logout?',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => 
-                                            Navigator.of(context).pop(false),
-                                        child: Text(
-                                          'Cancel',
-                                          style: TextStyle(
-                                            color: Colors.grey[400],
+                                final shouldLogout =
+                                    await showDialog<bool>(
+                                      context: context,
+                                      builder:
+                                          (context) => AlertDialog(
+                                            backgroundColor: Colors.grey[900],
+                                            title: const Text(
+                                              'Logout',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            content: const Text(
+                                              'Are you sure you want to logout?',
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed:
+                                                    () => Navigator.of(
+                                                      context,
+                                                    ).pop(false),
+                                                child: Text(
+                                                  'Cancel',
+                                                  style: TextStyle(
+                                                    color: Colors.grey[400],
+                                                  ),
+                                                ),
+                                              ),
+                                              TextButton(
+                                                onPressed:
+                                                    () => Navigator.of(
+                                                      context,
+                                                    ).pop(true),
+                                                child: const Text(
+                                                  'Logout',
+                                                  style: TextStyle(
+                                                    color: Colors.deepOrange,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () => 
-                                            Navigator.of(context).pop(true),
-                                        child: const Text(
-                                          'Logout',
-                                          style: TextStyle(
-                                            color: Colors.deepOrange,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ) ?? false;
+                                    ) ??
+                                    false;
 
                                 if (shouldLogout && mounted) {
                                   await authViewModel.signOut();
                                   // Navigate to login screen or home after logout
                                   if (mounted) {
-                                    Navigator.of(context).pushNamedAndRemoveUntil(
+                                    Navigator.of(
+                                      context,
+                                    ).pushNamedAndRemoveUntil(
                                       '/',
                                       (route) => false,
                                     );
@@ -612,7 +992,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.deepOrange,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -633,6 +1015,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                     ),
+
+                    const SizedBox(height: 40),
+
+                    // Calorie Calculation Details
+                    if (_isEditing && _canShowCalculationDetails()) ...[
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Calorie Calculation Details',
+                              style: TextStyle(
+                                color: Colors.grey[300],
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // BMR
+                            _buildCalculationDetail(
+                              'Estimated BMR',
+                              _getCalculatedBMR(),
+                            ),
+
+                            // TDEE
+                            _buildCalculationDetail(
+                              'Estimated TDEE',
+                              _getCalculatedTDEE(),
+                            ),
+
+                            // Goal Adjustment
+                            _buildCalculationDetail(
+                              'Goal Adjustment',
+                              _getGoalAdjustmentText(),
+                            ),
+
+                            // Calorie Target
+                            _buildCalculationDetail(
+                              'Calorie Target',
+                              _getCalculatedTarget(),
+                              isTotal: true,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                    ],
                   ],
                 ),
               ),
@@ -649,6 +1085,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required TextEditingController controller,
     String? hint,
     TextInputType? keyboardType,
+    void Function(String)? onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -668,6 +1105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             controller: controller,
             enabled: _isEditing,
             keyboardType: keyboardType,
+            onChanged: onChanged,
             style: const TextStyle(color: Colors.white, fontSize: 16),
             decoration: InputDecoration(
               hintText: hint,

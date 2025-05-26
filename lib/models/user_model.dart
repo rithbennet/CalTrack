@@ -1,3 +1,5 @@
+import '../utils/calorie_calculator.dart';
+
 // A comprehensive model class to represent user data
 class UserModel {
   final String id;
@@ -160,6 +162,63 @@ class UserModel {
     }
   }
 
+  // Calculate BMR (Basal Metabolic Rate) using Mifflin-St Jeor Equation
+  double? get bmr {
+    if (weight == null || height == null || age == null || gender == null) {
+      return null;
+    }
+
+    return CalorieCalculator.calculateBMR(
+      weight: weight!,
+      height: height!,
+      age: age!,
+      gender: gender!,
+    );
+  }
+
+  // Calculate TDEE (Total Daily Energy Expenditure)
+  double? get tdee {
+    final userBmr = bmr;
+    if (userBmr == null || activityLevel == null) return null;
+
+    return CalorieCalculator.calculateTDEE(
+      bmr: userBmr,
+      activityLevel: activityLevel!,
+    );
+  }
+
+  // Calculate recommended daily calorie target based on goal
+  int? get recommendedDailyCalorieTarget {
+    final userTdee = tdee;
+    if (userTdee == null || goal == null) return null;
+
+    return CalorieCalculator.calculateDailyCalorieTarget(
+      tdee: userTdee,
+      goal: goal!,
+    );
+  }
+
+  // Check if user has enough data for automatic calorie calculation
+  bool get canCalculateCalories {
+    return weight != null &&
+        height != null &&
+        age != null &&
+        gender != null &&
+        activityLevel != null &&
+        goal != null;
+  }
+
+  // Get the effective daily calorie target (manual or calculated)
+  int? get effectiveDailyCalorieTarget {
+    // If user has set a manual target, use that
+    if (dailyCalorieTarget != null && dailyCalorieTarget! > 0) {
+      return dailyCalorieTarget;
+    }
+
+    // Otherwise, use the calculated recommendation
+    return recommendedDailyCalorieTarget;
+  }
+
   // Override toString for debugging
   @override
   String toString() {
@@ -175,6 +234,8 @@ class UserModel {
         other.email == email &&
         other.displayName == displayName &&
         other.photoURL == photoURL &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt &&
         other.weight == weight &&
         other.height == height &&
         other.gender == gender &&
@@ -192,6 +253,8 @@ class UserModel {
         email.hashCode ^
         displayName.hashCode ^
         photoURL.hashCode ^
+        createdAt.hashCode ^
+        updatedAt.hashCode ^
         weight.hashCode ^
         height.hashCode ^
         gender.hashCode ^
