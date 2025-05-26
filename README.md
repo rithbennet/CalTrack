@@ -14,7 +14,7 @@ This project uses environment variables for sensitive configuration like Firebas
    - Never commit your `.env` file to git
 
 ```bash
-cp .env.example .env
+cd .env.example .env
 # Then edit .env with the actual values
 ```
 
