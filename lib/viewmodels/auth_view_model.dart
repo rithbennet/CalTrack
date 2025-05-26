@@ -217,10 +217,13 @@ class AuthViewModel extends ChangeNotifier {
   // Sign out
   Future<void> signOut() async {
     _isLoading = true;
+    _errorMessage = '';
     notifyListeners();
 
     try {
       await _authService.signOut();
+      // Clear all user data immediately
+      _currentUser = null;
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
