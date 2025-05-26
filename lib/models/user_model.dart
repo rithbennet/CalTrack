@@ -6,6 +6,15 @@ class UserModel {
   final String? photoURL;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final double? weight; // in kg
+  final double? height; // in cm
+  final String? gender; // 'Male', 'Female', 'Other'
+  final int? age;
+  final String?
+  activityLevel; // 'Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extremely Active'
+  final String? goal; // 'Lose Weight', 'Maintain Weight', 'Gain Weight'
+  final int? dailyCalorieTarget;
+  final bool? isOnboardingCompleted;
 
   UserModel({
     required this.id,
@@ -14,6 +23,14 @@ class UserModel {
     this.photoURL,
     this.createdAt,
     this.updatedAt,
+    this.weight,
+    this.height,
+    this.gender,
+    this.age,
+    this.activityLevel,
+    this.goal,
+    this.dailyCalorieTarget,
+    this.isOnboardingCompleted,
   });
 
   // Create a UserModel from Firebase User (for authentication)
@@ -27,6 +44,7 @@ class UserModel {
       email: user.email ?? '',
       displayName: user.displayName,
       photoURL: user.photoURL,
+      // Other fields will be loaded from Firestore
     );
   }
 
@@ -39,6 +57,16 @@ class UserModel {
       photoURL: map['photoURL'],
       createdAt: map['createdAt']?.toDate(),
       updatedAt: map['updatedAt']?.toDate(),
+      weight:
+          (map['weight'] != null) ? (map['weight'] as num).toDouble() : null,
+      height:
+          (map['height'] != null) ? (map['height'] as num).toDouble() : null,
+      gender: map['gender'],
+      age: map['age'],
+      activityLevel: map['activityLevel'],
+      goal: map['goal'],
+      dailyCalorieTarget: map['dailyCalorieTarget'],
+      isOnboardingCompleted: map['isOnboardingCompleted'],
     );
   }
 
@@ -50,6 +78,14 @@ class UserModel {
       'photoURL': photoURL,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'weight': weight,
+      'height': height,
+      'gender': gender,
+      'age': age,
+      'activityLevel': activityLevel,
+      'goal': goal,
+      'dailyCalorieTarget': dailyCalorieTarget,
+      'isOnboardingCompleted': isOnboardingCompleted,
     };
   }
 
@@ -61,6 +97,14 @@ class UserModel {
     String? photoURL,
     DateTime? createdAt,
     DateTime? updatedAt,
+    double? weight,
+    double? height,
+    String? gender,
+    int? age,
+    String? activityLevel,
+    String? goal,
+    int? dailyCalorieTarget,
+    bool? isOnboardingCompleted,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -69,6 +113,15 @@ class UserModel {
       photoURL: photoURL ?? this.photoURL,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      weight: weight ?? this.weight,
+      height: height ?? this.height,
+      gender: gender ?? this.gender,
+      age: age ?? this.age,
+      activityLevel: activityLevel ?? this.activityLevel,
+      goal: goal ?? this.goal,
+      dailyCalorieTarget: dailyCalorieTarget ?? this.dailyCalorieTarget,
+      isOnboardingCompleted:
+          isOnboardingCompleted ?? this.isOnboardingCompleted,
     );
   }
 
@@ -80,6 +133,32 @@ class UserModel {
 
   // Check if user has a profile picture
   bool get hasProfilePicture => photoURL != null && photoURL!.isNotEmpty;
+
+  // Calculate BMI if height and weight are available
+  double? get bmi {
+    if (height != null && weight != null && height! > 0) {
+      // BMI = weight(kg) / (height(m))^2
+      final heightInMeters = height! / 100;
+      return weight! / (heightInMeters * heightInMeters);
+    }
+    return null;
+  }
+
+  // Get BMI category
+  String? get bmiCategory {
+    final userBmi = bmi;
+    if (userBmi == null) return null;
+
+    if (userBmi < 18.5) {
+      return 'Underweight';
+    } else if (userBmi < 25) {
+      return 'Normal';
+    } else if (userBmi < 30) {
+      return 'Overweight';
+    } else {
+      return 'Obese';
+    }
+  }
 
   // Override toString for debugging
   @override
@@ -95,7 +174,15 @@ class UserModel {
         other.id == id &&
         other.email == email &&
         other.displayName == displayName &&
-        other.photoURL == photoURL;
+        other.photoURL == photoURL &&
+        other.weight == weight &&
+        other.height == height &&
+        other.gender == gender &&
+        other.age == age &&
+        other.activityLevel == activityLevel &&
+        other.goal == goal &&
+        other.dailyCalorieTarget == dailyCalorieTarget &&
+        other.isOnboardingCompleted == isOnboardingCompleted;
   }
 
   // Override hashCode
@@ -104,6 +191,14 @@ class UserModel {
     return id.hashCode ^
         email.hashCode ^
         displayName.hashCode ^
-        photoURL.hashCode;
+        photoURL.hashCode ^
+        weight.hashCode ^
+        height.hashCode ^
+        gender.hashCode ^
+        age.hashCode ^
+        activityLevel.hashCode ^
+        goal.hashCode ^
+        dailyCalorieTarget.hashCode ^
+        isOnboardingCompleted.hashCode;
   }
 }

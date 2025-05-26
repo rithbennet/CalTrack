@@ -14,6 +14,30 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _displayNameController = TextEditingController();
+  final _weightController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _ageController = TextEditingController();
+  final _dailyCalorieTargetController = TextEditingController();
+
+  String _selectedGender = 'Male';
+  String _selectedActivityLevel = 'Moderately Active';
+  String _selectedGoal = 'Maintain Weight';
+
+  // Activity level options
+  final List<String> _activityLevels = [
+    'Sedentary',
+    'Lightly Active',
+    'Moderately Active',
+    'Very Active',
+    'Extremely Active',
+  ];
+
+  // Goal options
+  final List<String> _goals = ['Lose Weight', 'Maintain Weight', 'Gain Weight'];
+
+  // Gender options
+  final List<String> _genders = ['Male', 'Female', 'Other'];
+
   bool _isEditing = false;
   bool _isSaving = false;
 
@@ -31,17 +55,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (authViewModel.currentUser != null) {
       userViewModel.loadUserProfile(authViewModel.currentUser!.id);
-      // Set the initial display name
+      // Set the initial values from user profile
       final userProfile = userViewModel.userProfile;
       final currentUser = authViewModel.currentUser;
+
       _displayNameController.text =
           userProfile?.displayName ?? currentUser?.displayName ?? '';
+      _weightController.text = userProfile?.weight?.toString() ?? '';
+      _heightController.text = userProfile?.height?.toString() ?? '';
+      _ageController.text = userProfile?.age?.toString() ?? '';
+      _dailyCalorieTargetController.text =
+          userProfile?.dailyCalorieTarget?.toString() ?? '';
+
+      // Set dropdown values if available
+      if (userProfile?.gender != null) {
+        _selectedGender = userProfile!.gender!;
+      }
+      if (userProfile?.activityLevel != null) {
+        _selectedActivityLevel = userProfile!.activityLevel!;
+      }
+      if (userProfile?.goal != null) {
+        _selectedGoal = userProfile!.goal!;
+      }
     }
   }
 
   @override
   void dispose() {
     _displayNameController.dispose();
+    _weightController.dispose();
+    _heightController.dispose();
+    _ageController.dispose();
+    _dailyCalorieTargetController.dispose();
     super.dispose();
   }
 
@@ -65,6 +110,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         photoURL: userViewModel.userProfile?.photoURL ?? currentUser.photoURL,
         createdAt: userViewModel.userProfile?.createdAt ?? DateTime.now(),
         updatedAt: DateTime.now(),
+        weight: double.tryParse(_weightController.text.trim()),
+        height: double.tryParse(_heightController.text.trim()),
+        age: int.tryParse(_ageController.text.trim()),
+        gender: _selectedGender,
+        activityLevel: _selectedActivityLevel,
+        goal: _selectedGoal,
+        dailyCalorieTarget: int.tryParse(
+          _dailyCalorieTargetController.text.trim(),
+        ),
+        isOnboardingCompleted:
+            userViewModel.userProfile?.isOnboardingCompleted ?? true,
       );
 
       final success = await userViewModel.createOrUpdateUserProfile(
@@ -156,11 +212,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           : () {
                             setState(() {
                               _isEditing = false;
-                              // Reset the display name
-                              _displayNameController.text =
-                                  userProfile?.displayName ??
-                                  currentUser?.displayName ??
-                                  '';
+                              // Reset controllers to original values
+                              _loadUserData();
                             });
                           },
                   icon: const Icon(Icons.cancel),
@@ -252,6 +305,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: TextStyle(color: Colors.grey[400], fontSize: 16),
                     ),
 
+                    // Display BMI if available
+                    if (userProfile?.bmi != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'BMI: ${userProfile!.bmi!.toStringAsFixed(1)} - ${userProfile.bmiCategory}',
+                        style: TextStyle(
+                          color: _getBmiColor(userProfile.bmi!),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+
                     const SizedBox(height: 40),
 
                     // Profile Form
@@ -259,7 +325,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          // Display Name Field
+                          // Personal Info Section
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
@@ -270,63 +336,172 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Display Name',
+                                  'Personal Information',
                                   style: TextStyle(
-                                    color: Colors.grey[400],
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey[300],
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(height: 12),
-                                TextFormField(
+                                const SizedBox(height: 20),
+
+                                // Display Name Field
+                                _buildTextField(
+                                  label: 'Display Name',
                                   controller: _displayNameController,
-                                  enabled: _isEditing,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter your display name',
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey[500],
-                                    ),
-                                    border:
-                                        _isEditing
-                                            ? OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey[600]!,
-                                              ),
-                                            )
-                                            : InputBorder.none,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey[600]!,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                        color: Colors.deepOrange,
-                                      ),
-                                    ),
-                                    filled: _isEditing,
-                                    fillColor:
-                                        _isEditing
-                                            ? Colors.grey[800]
-                                            : Colors.transparent,
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.trim().isEmpty) {
-                                      return 'Display name cannot be empty';
+                                  hint: 'Enter your display name',
+                                ),
+
+                                // Age Field
+                                _buildTextField(
+                                  label: 'Age',
+                                  controller: _ageController,
+                                  hint: 'Enter your age',
+                                  keyboardType: TextInputType.number,
+                                ),
+
+                                // Gender Field
+                                _buildDropdownField(
+                                  label: 'Gender',
+                                  value: _selectedGender,
+                                  items:
+                                      _genders
+                                          .map(
+                                            (gender) => DropdownMenuItem(
+                                              value: gender,
+                                              child: Text(gender),
+                                            ),
+                                          )
+                                          .toList(),
+                                  onChanged: (value) {
+                                    if (value != null && _isEditing) {
+                                      setState(() {
+                                        _selectedGender = value;
+                                      });
                                     }
-                                    if (value.trim().length < 2) {
-                                      return 'Display name must be at least 2 characters';
-                                    }
-                                    return null;
                                   },
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Physical Info Section
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Physical Information',
+                                  style: TextStyle(
+                                    color: Colors.grey[300],
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Weight Field
+                                _buildTextField(
+                                  label: 'Weight (kg)',
+                                  controller: _weightController,
+                                  hint: 'Enter your weight in kg',
+                                  keyboardType: TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                                ),
+
+                                // Height Field
+                                _buildTextField(
+                                  label: 'Height (cm)',
+                                  controller: _heightController,
+                                  hint: 'Enter your height in cm',
+                                  keyboardType: TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Fitness Goals Section
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Fitness Goals',
+                                  style: TextStyle(
+                                    color: Colors.grey[300],
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Activity Level Field
+                                _buildDropdownField(
+                                  label: 'Activity Level',
+                                  value: _selectedActivityLevel,
+                                  items:
+                                      _activityLevels
+                                          .map(
+                                            (level) => DropdownMenuItem(
+                                              value: level,
+                                              child: Text(level),
+                                            ),
+                                          )
+                                          .toList(),
+                                  onChanged: (value) {
+                                    if (value != null && _isEditing) {
+                                      setState(() {
+                                        _selectedActivityLevel = value;
+                                      });
+                                    }
+                                  },
+                                ),
+
+                                // Goal Field
+                                _buildDropdownField(
+                                  label: 'Goal',
+                                  value: _selectedGoal,
+                                  items:
+                                      _goals
+                                          .map(
+                                            (goal) => DropdownMenuItem(
+                                              value: goal,
+                                              child: Text(goal),
+                                            ),
+                                          )
+                                          .toList(),
+                                  onChanged: (value) {
+                                    if (value != null && _isEditing) {
+                                      setState(() {
+                                        _selectedGoal = value;
+                                      });
+                                    }
+                                  },
+                                ),
+
+                                // Daily Calorie Target Field
+                                _buildTextField(
+                                  label: 'Daily Calorie Target',
+                                  controller: _dailyCalorieTargetController,
+                                  hint: 'Enter your daily calorie target',
+                                  keyboardType: TextInputType.number,
                                 ),
                               ],
                             ),
@@ -347,35 +522,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Text(
                                   'Account Information',
                                   style: TextStyle(
-                                    color: Colors.grey[400],
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey[300],
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 20),
                                 _buildReadOnlyInfoRow(
                                   'Email',
-                                  currentUser?.email ?? 'Not available',
+                                  currentUser?.email ?? '',
                                 ),
-                                const SizedBox(height: 16),
-                                _buildReadOnlyInfoRow(
-                                  'User ID',
-                                  currentUser?.id ?? 'Unknown',
-                                ),
-                                const SizedBox(height: 16),
-                                _buildReadOnlyInfoRow(
-                                  'Member Since',
-                                  userProfile?.createdAt != null
-                                      ? _formatDate(userProfile!.createdAt!)
-                                      : 'Recently joined',
-                                ),
-                                if (userProfile?.updatedAt != null) ...[
-                                  const SizedBox(height: 16),
+                                if (userProfile?.createdAt != null)
                                   _buildReadOnlyInfoRow(
-                                    'Last Updated',
+                                    'Joined',
+                                    _formatDate(userProfile!.createdAt!),
+                                  ),
+                                if (userProfile?.updatedAt != null)
+                                  _buildReadOnlyInfoRow(
+                                    'Last updated',
                                     _formatDate(userProfile!.updatedAt!),
                                   ),
-                                ],
                               ],
                             ),
                           ),
@@ -383,93 +549,87 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 40),
 
                           // Logout Button
-                          SizedBox(
+                          Container(
                             width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed:
-                                  _isEditing
-                                      ? null
-                                      : () async {
-                                        // Show confirmation dialog
-                                        final shouldLogout = await showDialog<
-                                          bool
-                                        >(
-                                          context: context,
-                                          builder:
-                                              (context) => AlertDialog(
-                                                title: const Text(
-                                                  'Confirm Logout',
-                                                ),
-                                                content: const Text(
-                                                  'Are you sure you want to log out?',
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed:
-                                                        () => Navigator.of(
-                                                          context,
-                                                        ).pop(false),
-                                                    child: const Text('Cancel'),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed:
-                                                        () => Navigator.of(
-                                                          context,
-                                                        ).pop(true),
-                                                    style: TextButton.styleFrom(
-                                                      foregroundColor:
-                                                          Colors.red,
-                                                    ),
-                                                    child: const Text('Logout'),
-                                                  ),
-                                                ],
-                                                backgroundColor:
-                                                    Colors.grey[900],
-                                                titleTextStyle: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                contentTextStyle:
-                                                    const TextStyle(
-                                                      color: Colors.white70,
-                                                      fontSize: 16,
-                                                    ),
-                                              ),
-                                        );
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                // Show confirmation dialog
+                                final shouldLogout = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    backgroundColor: Colors.grey[900],
+                                    title: const Text(
+                                      'Logout',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    content: const Text(
+                                      'Are you sure you want to logout?',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => 
+                                            Navigator.of(context).pop(false),
+                                        child: Text(
+                                          'Cancel',
+                                          style: TextStyle(
+                                            color: Colors.grey[400],
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => 
+                                            Navigator.of(context).pop(true),
+                                        child: const Text(
+                                          'Logout',
+                                          style: TextStyle(
+                                            color: Colors.deepOrange,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ) ?? false;
 
-                                        // If user confirms logout
-                                        if (shouldLogout == true &&
-                                            context.mounted) {
-                                          // Show a loading indicator
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text('Logging out...'),
-                                            ),
-                                          );
-
-                                          // Call the signOut method from AuthViewModel
-                                          await authViewModel.signOut();
-                                        }
-                                      },
-                              icon: const Icon(Icons.logout),
-                              label: const Text('Logout'),
+                                if (shouldLogout && mounted) {
+                                  await authViewModel.signOut();
+                                  // Navigate to login screen or home after logout
+                                  if (mounted) {
+                                    Navigator.of(context).pushNamedAndRemoveUntil(
+                                      '/',
+                                      (route) => false,
+                                    );
+                                  }
+                                }
+                              },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
+                                backgroundColor: Colors.deepOrange,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Logout',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 40),
                         ],
                       ),
                     ),
@@ -483,24 +643,121 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildReadOnlyInfoRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 100,
-          child: Text(
+  // Helper method to build text fields
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    String? hint,
+    TextInputType? keyboardType,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
             label,
-            style: TextStyle(color: Colors.grey[500], fontSize: 14),
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: controller,
+            enabled: _isEditing,
+            keyboardType: keyboardType,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: Colors.grey[500]),
+              fillColor: Colors.grey[850],
+              filled: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+            validator: (value) {
+              if (label == 'Display Name' && (value == null || value.isEmpty)) {
+                return 'Please enter your display name';
+              }
+              return null;
+            },
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build dropdown fields
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<DropdownMenuItem<String>> items,
+    required void Function(String?)? onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[850],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: value,
+              items: items,
+              onChanged: _isEditing ? onChanged : null,
+              dropdownColor: Colors.grey[900],
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(border: InputBorder.none),
+              iconEnabledColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -520,5 +777,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+  // Helper method to get color based on BMI
+  Color _getBmiColor(double bmi) {
+    if (bmi < 18.5) {
+      return Colors.blue;
+    } else if (bmi < 25) {
+      return Colors.green;
+    } else if (bmi < 30) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
   }
 }
