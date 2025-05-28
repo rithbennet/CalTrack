@@ -152,8 +152,8 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Name: ${food.name}', style: const TextStyle(fontSize: 20)),
-          Text('Calories (total): ${food.caloriesTotal} cal'),
-          Text('Calories (per serving): ${food.caloriesPerServing} cal'),
+          Text('Calories (per serving): ${food.caloriesTotal} cal'),
+          Text('Calories (total): ${food.caloriesPerServing} cal'),
           Text('Serving size: ${food.servingSize}'),
           const SizedBox(height: 20),
           // ElevatedButton(
