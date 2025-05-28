@@ -1,8 +1,8 @@
 class FoodItem {
   final String barcode;
   final String name;
-  final int caloriesTotal;
-  final int caloriesPerServing;
+  final double caloriesTotal; // changed from int to double
+  final double caloriesPerServing; // changed from int to double
   final String servingSize;
 
   FoodItem({
@@ -17,8 +17,8 @@ class FoodItem {
     return FoodItem(
       barcode: json['barcode'] ?? '',
       name: json['name'] ?? 'Unknown',
-      caloriesTotal: json['calories_total'] ?? 0,
-      caloriesPerServing: json['calories_per_serving'] ?? 0,
+      caloriesTotal: (json['calories_total'] ?? 0).toDouble(),
+      caloriesPerServing: (json['calories_per_serving'] ?? 0).toDouble(),
       servingSize: json['serving_size'] ?? '',
     );
   }

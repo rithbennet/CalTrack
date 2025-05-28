@@ -58,5 +58,7 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Caltrack requires access to the camera to scan barcodes.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Caltrack requires access to the photo library to save and manage images.</string>
 </dict>
 </plist>

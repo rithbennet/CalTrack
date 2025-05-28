@@ -33,13 +33,23 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
                     },
                   ),
                   Positioned(
-                    bottom: 20,
+                    bottom: 80,
                     left: 20,
                     right: 20,
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.photo),
                       label: const Text('Scan from Gallery'),
                       onPressed: () => _scanFromGallery(barcodeVM),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Enter Barcode Manually'),
+                      onPressed: () => _showManualEntryDialog(barcodeVM),
                     ),
                   ),
                 ],
@@ -68,22 +78,66 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
-      final BarcodeCapture? capture = await _controller.analyzeImage(
-        image.path,
-      );
-
-      if (capture != null && capture.barcodes.isNotEmpty) {
-        final String? code = capture.barcodes.first.rawValue;
-        if (code != null) {
-          setState(() => _isScanning = false);
-          await vm.fetchFoodInfo(code);
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No barcode found in the image.')),
+      try {
+        final BarcodeCapture? capture = await _controller.analyzeImage(
+          image.path,
         );
+
+        if (capture != null && capture.barcodes.isNotEmpty) {
+          final String? code = capture.barcodes.first.rawValue;
+          if (code != null) {
+            setState(() => _isScanning = false);
+            await vm.fetchFoodInfo(code);
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No barcode found in the image.')),
+          );
+        }
+      } catch (e) {
+        // Handle unsupported on simulator or other errors gracefully
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error scanning image: $e')));
       }
     }
+  }
+
+  Future<void> _showManualEntryDialog(BarcodeViewModel vm) async {
+    final TextEditingController controller = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Enter Barcode Manually'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(hintText: 'Enter barcode'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // close dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final code = controller.text.trim();
+                if (code.isNotEmpty) {
+                  Navigator.of(context).pop(); // close dialog
+                  setState(() => _isScanning = false);
+                  await vm.fetchFoodInfo(code);
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildFoodInfo(BuildContext context, BarcodeViewModel vm) {
@@ -102,13 +156,13 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
           Text('Calories (per serving): ${food.caloriesPerServing} cal'),
           Text('Serving size: ${food.servingSize}'),
           const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              // Add logic to save to user's food log here
-              Navigator.pop(context);
-            },
-            child: const Text('Add to Food Log'),
-          ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     // Add logic to save to user's food log here
+          //     Navigator.pop(context);
+          //   },
+          //   child: const Text('Add to Food Log'),
+          // ),
           ElevatedButton(
             onPressed: () {
               vm.clear();
