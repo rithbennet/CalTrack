@@ -326,7 +326,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       children: [
         Text(
           label,
-          style: theme.textTheme.bodyLarge?.copyWith(
+          style: theme.textTheme.bodyMedium?.copyWith(
             color: colorScheme.onSurface,
             fontWeight: FontWeight.w500,
           ),
@@ -336,7 +336,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
           onTap: onTap,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
@@ -345,15 +345,19 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '$value $unit',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurface,
+                Expanded(
+                  child: Text(
+                    '$value $unit',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Icon(
                   Icons.arrow_drop_down,
                   color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  size: 20,
                 ),
               ],
             ),
@@ -533,69 +537,72 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildPickerField(
-                            label: 'Protein',
-                            value: _protein.toStringAsFixed(1),
-                            unit: 'g',
-                            onTap:
-                                () => _showNumberPicker(
-                                  title: 'Protein (g)',
-                                  currentValue: _protein,
-                                  onChanged:
-                                      (value) =>
-                                          setState(() => _protein = value),
-                                  min: 0,
-                                  max: 200,
-                                  step: 0.1,
-                                ),
-                            theme: theme,
-                            colorScheme: colorScheme,
+                    IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildPickerField(
+                              label: 'Protein',
+                              value: _protein.toStringAsFixed(1),
+                              unit: 'g',
+                              onTap:
+                                  () => _showNumberPicker(
+                                    title: 'Protein (g)',
+                                    currentValue: _protein,
+                                    onChanged:
+                                        (value) =>
+                                            setState(() => _protein = value),
+                                    min: 0,
+                                    max: 200,
+                                    step: 0.1,
+                                  ),
+                              theme: theme,
+                              colorScheme: colorScheme,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildPickerField(
-                            label: 'Carbs',
-                            value: _carbs.toStringAsFixed(1),
-                            unit: 'g',
-                            onTap:
-                                () => _showNumberPicker(
-                                  title: 'Carbs (g)',
-                                  currentValue: _carbs,
-                                  onChanged:
-                                      (value) => setState(() => _carbs = value),
-                                  min: 0,
-                                  max: 200,
-                                  step: 0.1,
-                                ),
-                            theme: theme,
-                            colorScheme: colorScheme,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildPickerField(
+                              label: 'Carbs',
+                              value: _carbs.toStringAsFixed(1),
+                              unit: 'g',
+                              onTap:
+                                  () => _showNumberPicker(
+                                    title: 'Carbs (g)',
+                                    currentValue: _carbs,
+                                    onChanged:
+                                        (value) =>
+                                            setState(() => _carbs = value),
+                                    min: 0,
+                                    max: 200,
+                                    step: 0.1,
+                                  ),
+                              theme: theme,
+                              colorScheme: colorScheme,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildPickerField(
-                            label: 'Fat',
-                            value: _fat.toStringAsFixed(1),
-                            unit: 'g',
-                            onTap:
-                                () => _showNumberPicker(
-                                  title: 'Fat (g)',
-                                  currentValue: _fat,
-                                  onChanged:
-                                      (value) => setState(() => _fat = value),
-                                  min: 0,
-                                  max: 200,
-                                  step: 0.1,
-                                ),
-                            theme: theme,
-                            colorScheme: colorScheme,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildPickerField(
+                              label: 'Fat',
+                              value: _fat.toStringAsFixed(1),
+                              unit: 'g',
+                              onTap:
+                                  () => _showNumberPicker(
+                                    title: 'Fat (g)',
+                                    currentValue: _fat,
+                                    onChanged:
+                                        (value) => setState(() => _fat = value),
+                                    min: 0,
+                                    max: 200,
+                                    step: 0.1,
+                                  ),
+                              theme: theme,
+                              colorScheme: colorScheme,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 32),
                     SizedBox(

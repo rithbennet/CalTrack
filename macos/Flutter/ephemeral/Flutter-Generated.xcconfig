@@ -1,6 +1,6 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/Users/emmanueljanot/Flutter-data/flutter
-FLUTTER_APPLICATION_PATH=/Users/emmanueljanot/Desktop/Code/caltrack
+FLUTTER_ROOT=/Users/rith/development/flutter
+FLUTTER_APPLICATION_PATH=/Users/rith/Documents/PROJECTS/caltrack
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_BUILD_DIR=build
 FLUTTER_BUILD_NAME=1.0.0
