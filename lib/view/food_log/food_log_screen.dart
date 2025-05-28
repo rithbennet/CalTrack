@@ -1,12 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import '../../models/food_entry.dart';
-import '../../viewmodels/food_log_view_model.dart'; // Update this import path
+import '../../viewmodels/food_log_view_model.dart';
+import '../../viewmodels/auth_view_model.dart';
 import 'add_food_screen.dart';
 import '../../theme/app_theme.dart';
+import '../../firebase_options.dart';
 
-class FoodLogScreen extends StatelessWidget {
+class FoodLogScreen extends StatefulWidget {
   const FoodLogScreen({super.key});
+
+  @override
+  State<FoodLogScreen> createState() => _FoodLogScreenState();
+}
+
+class _FoodLogScreenState extends State<FoodLogScreen> {
+  bool _timedOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Remove Firebase initialization as it's already initialized
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+    final foodLogViewModel = Provider.of<FoodLogViewModel>(
+      context,
+      listen: false,
+    );
+
+    if (authViewModel.currentUser != null) {
+      foodLogViewModel.initializeForUser(authViewModel.currentUser!.id);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +42,14 @@ class FoodLogScreen extends StatelessWidget {
       body: StreamBuilder<List<FoodEntry>>(
         stream: viewModel.entriesStream,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          // Debug print
+          print(
+            'Stream state: ${snapshot.connectionState}, hasData: ${snapshot.hasData}, error: ${snapshot.error}',
+          );
+
+          // Handle all stream states
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !_timedOut) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -25,6 +57,49 @@ class FoodLogScreen extends StatelessWidget {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
+          // Check if we need to show the timeout UI
+          if (_timedOut &&
+              (snapshot.connectionState == ConnectionState.waiting ||
+                  snapshot.data == null)) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Taking longer than expected...'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Refresh the screen
+                      final authViewModel = Provider.of<AuthViewModel>(
+                        context,
+                        listen: false,
+                      );
+                      if (authViewModel.currentUser != null) {
+                        // Initialize the food log for the current user
+                        viewModel.initializeForUser(
+                          authViewModel.currentUser!.id,
+                        );
+                      }
+                      setState(() {
+                        _timedOut = false;
+                      });
+                      // Reset timeout
+                      Future.delayed(const Duration(seconds: 5), () {
+                        if (mounted) {
+                          setState(() {
+                            _timedOut = true;
+                          });
+                        }
+                      });
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Even if we don't have data, we should stop loading
           final entries = snapshot.data ?? [];
 
           if (entries.isEmpty) {
