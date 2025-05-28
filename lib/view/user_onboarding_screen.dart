@@ -26,176 +26,212 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
-      backgroundColor: Colors.black87,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: Consumer<UserOnboardingViewModel>(
-          builder: (context, viewModel, child) {
-            if (viewModel.isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.green),
-              );
-            }
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Consumer<UserOnboardingViewModel>(
+            builder: (context, viewModel, child) {
+              if (viewModel.isLoading) {
+                return Center(
+                  child: CircularProgressIndicator(color: colorScheme.primary),
+                );
+              }
 
-            if (viewModel.isCompleted) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Navigator.pushReplacementNamed(context, '/home');
-              });
-            }
+              if (viewModel.isCompleted) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Navigator.pushReplacementNamed(context, '/home');
+                });
+              }
 
-            return Column(
-              children: [
-                // Progress indicator
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Step ${_currentPage + 1} of 4',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        width: 100,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: (_currentPage + 1) / 4,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Error message
-                if (viewModel.error.isNotEmpty)
+              return Column(
+                children: [
+                  // Progress indicator
                   Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red),
-                    ),
+                    padding: const EdgeInsets.all(20),
                     child: Row(
                       children: [
-                        const Icon(Icons.error, color: Colors.red),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            viewModel.error,
-                            style: const TextStyle(color: Colors.red),
+                        Text(
+                          'Step ${_currentPage + 1} of 4',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurface.withOpacity(0.7),
+                            fontSize: 16,
                           ),
                         ),
-                        IconButton(
-                          onPressed: viewModel.clearError,
-                          icon: const Icon(Icons.close, color: Colors.red),
+                        const Spacer(),
+                        Container(
+                          width: 100,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceVariant,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: (_currentPage + 1) / 4,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
 
-                // Page view
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (page) {
-                      setState(() {
-                        _currentPage = page;
-                      });
-                    },
-                    children: [
-                      _buildBasicInfoPage(viewModel),
-                      _buildPhysicalInfoPage(viewModel),
-                      _buildActivityPage(viewModel),
-                      _buildGoalPage(viewModel),
-                    ],
-                  ),
-                ),
+                  // Error message
+                  if (viewModel.error.isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colorScheme.error.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: colorScheme.error),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error, color: colorScheme.error),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              viewModel.error,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.error,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: viewModel.clearError,
+                            icon: Icon(Icons.close, color: colorScheme.error),
+                          ),
+                        ],
+                      ),
+                    ),
 
-                // Navigation buttons
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    children: [
-                      if (_currentPage > 0)
+                  // Page view
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (page) {
+                        setState(() {
+                          _currentPage = page;
+                        });
+                      },
+                      children: [
+                        _buildScrollablePage(
+                          _buildBasicInfoPage(viewModel, theme, colorScheme),
+                        ),
+                        _buildScrollablePage(
+                          _buildPhysicalInfoPage(viewModel, theme, colorScheme),
+                        ),
+                        _buildScrollablePage(
+                          _buildActivityPage(viewModel, theme, colorScheme),
+                        ),
+                        _buildScrollablePage(
+                          _buildGoalPage(viewModel, theme, colorScheme),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Navigation buttons
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        if (_currentPage > 0)
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                _pageController.previousPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: colorScheme.primary),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
+                              ),
+                              child: Text(
+                                'Back',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (_currentPage > 0) const SizedBox(width: 16),
                         Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              _pageController.previousPage(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.green),
+                          child: ElevatedButton(
+                            onPressed: () => _nextPage(viewModel),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
                               padding: const EdgeInsets.symmetric(vertical: 15),
                             ),
-                            child: const Text(
-                              'Back',
-                              style: TextStyle(color: Colors.green),
+                            child: Text(
+                              _currentPage == 3 ? 'Complete Setup' : 'Next',
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      if (_currentPage > 0) const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _nextPage(viewModel),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                          ),
-                          child: Text(
-                            _currentPage == 3 ? 'Complete Setup' : 'Next',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBasicInfoPage(UserOnboardingViewModel viewModel) {
+  Widget _buildScrollablePage(Widget child) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildBasicInfoPage(
+    UserOnboardingViewModel viewModel,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Let\'s get to know you!',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'We\'ll use this information to personalize your experience.',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.7),
+            ),
           ),
           const SizedBox(height: 40),
           _buildTextField(
@@ -203,6 +239,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             value: viewModel.displayName,
             onChanged: viewModel.setDisplayName,
             hint: 'How should we call you?',
+            theme: theme,
+            colorScheme: colorScheme,
           ),
           const SizedBox(height: 20),
           _buildTextField(
@@ -211,6 +249,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             onChanged: viewModel.setAge,
             hint: 'Your age in years',
             keyboardType: TextInputType.number,
+            theme: theme,
+            colorScheme: colorScheme,
           ),
           const SizedBox(height: 20),
           _buildDropdownField(
@@ -218,30 +258,37 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             value: viewModel.gender,
             options: _genderOptions,
             onChanged: viewModel.setGender,
+            theme: theme,
+            colorScheme: colorScheme,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPhysicalInfoPage(UserOnboardingViewModel viewModel) {
+  Widget _buildPhysicalInfoPage(
+    UserOnboardingViewModel viewModel,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Physical Information',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'This helps us calculate your daily calorie needs.',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.7),
+            ),
           ),
           const SizedBox(height: 40),
           _buildTextField(
@@ -250,6 +297,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             onChanged: viewModel.setHeight,
             hint: 'Your height in centimeters',
             keyboardType: TextInputType.number,
+            theme: theme,
+            colorScheme: colorScheme,
           ),
           const SizedBox(height: 20),
           _buildTextField(
@@ -258,30 +307,37 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             onChanged: viewModel.setWeight,
             hint: 'Your current weight in kilograms',
             keyboardType: TextInputType.number,
+            theme: theme,
+            colorScheme: colorScheme,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActivityPage(UserOnboardingViewModel viewModel) {
+  Widget _buildActivityPage(
+    UserOnboardingViewModel viewModel,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Activity Level',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'How active are you on a typical day?',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.7),
+            ),
           ),
           const SizedBox(height: 40),
           ..._activityLevels.map(
@@ -291,6 +347,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
               value: level,
               groupValue: viewModel.activityLevel,
               onChanged: viewModel.setActivityLevel,
+              theme: theme,
+              colorScheme: colorScheme,
             ),
           ),
         ],
@@ -298,24 +356,29 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
     );
   }
 
-  Widget _buildGoalPage(UserOnboardingViewModel viewModel) {
+  Widget _buildGoalPage(
+    UserOnboardingViewModel viewModel,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Your Goal',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'What\'s your primary fitness goal?',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.7),
+            ),
           ),
           const SizedBox(height: 40),
           ..._goals.map(
@@ -325,6 +388,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
               value: goal,
               groupValue: viewModel.goal,
               onChanged: viewModel.setGoal,
+              theme: theme,
+              colorScheme: colorScheme,
             ),
           ),
         ],
@@ -338,15 +403,16 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
     required Function(String) onChanged,
     String? hint,
     TextInputType? keyboardType,
+    required ThemeData theme,
+    required ColorScheme colorScheme,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -358,19 +424,23 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             ),
           onChanged: onChanged,
           keyboardType: keyboardType,
-          style: const TextStyle(color: Colors.white),
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurface,
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: Colors.white54),
+            hintStyle: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.5),
+            ),
             filled: true,
-            fillColor: Colors.grey[900],
+            fillColor: colorScheme.surfaceVariant,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.green),
+              borderSide: BorderSide(color: colorScheme.primary),
             ),
           ),
         ),
@@ -383,15 +453,16 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
     required String value,
     required List<String> options,
     required Function(String) onChanged,
+    required ThemeData theme,
+    required ColorScheme colorScheme,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -399,7 +470,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.grey[900],
+            color: colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButton<String>(
@@ -407,8 +478,10 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             onChanged: (newValue) => onChanged(newValue ?? ''),
             isExpanded: true,
             underline: Container(),
-            dropdownColor: Colors.grey[900],
-            style: const TextStyle(color: Colors.white),
+            dropdownColor: colorScheme.surfaceVariant,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurface,
+            ),
             items:
                 options.map((option) {
                   return DropdownMenuItem(value: option, child: Text(option));
@@ -425,23 +498,30 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
     required String value,
     required String groupValue,
     required Function(String) onChanged,
+    required ThemeData theme,
+    required ColorScheme colorScheme,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: RadioListTile<String>(
         title: Text(
           title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w500,
           ),
         ),
-        subtitle: Text(subtitle, style: const TextStyle(color: Colors.white70)),
+        subtitle: Text(
+          subtitle,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
         value: value,
         groupValue: groupValue,
         onChanged: (newValue) => onChanged(newValue ?? ''),
-        activeColor: Colors.green,
-        tileColor: Colors.grey[900],
+        activeColor: colorScheme.primary,
+        tileColor: colorScheme.surfaceVariant,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
