@@ -282,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       goal: _selectedGoal,
     );
 
-    return target != null ? '${target} cal/day' : 'N/A';
+    return target != null ? '$target cal/day' : 'N/A';
   }
 
   Widget _buildCalculationDetail(

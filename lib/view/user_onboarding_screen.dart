@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart'; // Added for CupertinoPicker
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:caltrack/viewmodels/user_onboarding_viewmodel.dart';
@@ -23,6 +24,139 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
     'Extremely Active',
   ];
   final List<String> _goals = ['Lose Weight', 'Maintain Weight', 'Gain Weight'];
+
+  // Helper to show CupertinoPicker in a modal bottom sheet
+  Future<void> _showNumberPicker({
+    required BuildContext context, // Added context here
+    required String title,
+    required int min,
+    required int max,
+    required int current,
+    required ValueChanged<int> onSelected,
+  }) async {
+    int tempSelected = current;
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext modalContext) {
+        // Use modalContext for elements inside the sheet
+        return SizedBox(
+          height: 280, // Adjusted height for title and button
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 20,
+                ),
+                child: Text(
+                  title,
+                  style: Theme.of(
+                    modalContext,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(
+                    initialItem: (current - min).clamp(
+                      0,
+                      max - min,
+                    ), // Ensure initialItem is valid
+                  ),
+                  itemExtent: 40,
+                  onSelectedItemChanged: (index) {
+                    tempSelected = min + index;
+                  },
+                  children: List.generate(
+                    max - min + 1,
+                    (index) => Center(
+                      child: Text(
+                        '${min + index}',
+                        style: Theme.of(modalContext).textTheme.bodyLarge,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(modalContext).colorScheme.primary,
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  onPressed: () {
+                    onSelected(tempSelected);
+                    Navigator.pop(modalContext);
+                  },
+                  child: Text(
+                    'Done',
+                    style: Theme.of(
+                      modalContext,
+                    ).textTheme.labelLarge?.copyWith(
+                      color: Theme.of(modalContext).colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Widget for the tappable field that triggers the picker
+  Widget _buildPickerField({
+    required String label,
+    required String value,
+    required String unit, // e.g., "years", "cm", "kg"
+    required VoidCallback onTap,
+    required ThemeData theme,
+    required ColorScheme colorScheme,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: colorScheme.surfaceContainerHighest, // Default border
+              ),
+            ),
+            child: Text(
+              value.isEmpty ? 'Select $label' : '$value $unit',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color:
+                    value.isEmpty
+                        ? colorScheme.onSurface.withOpacity(0.5)
+                        : colorScheme.onSurface,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +189,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                     child: Row(
                       children: [
                         Text(
-                          'Step ${_currentPage + 1} of 4',
+                          'Step ${_currentPage + 1} of 4', // Corrected this line
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurface.withOpacity(0.7),
                             fontSize: 16,
@@ -66,7 +200,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                           width: 100,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceVariant,
+                            color: colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(2),
                           ),
                           child: FractionallySizedBox(
@@ -202,7 +336,9 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
       physics: const BouncingScrollPhysics(),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          minHeight: MediaQuery.of(context).size.height * 0.8,
+          minHeight:
+              MediaQuery.of(context).size.height *
+              0.7, // Adjusted for potential picker height
         ),
         child: child,
       ),
@@ -235,6 +371,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
           ),
           const SizedBox(height: 40),
           _buildTextField(
+            // Display Name remains a TextField
             label: 'Display Name',
             value: viewModel.displayName,
             onChanged: viewModel.setDisplayName,
@@ -243,12 +380,21 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             colorScheme: colorScheme,
           ),
           const SizedBox(height: 20),
-          _buildTextField(
+          _buildPickerField(
+            // Age uses the picker
             label: 'Age',
             value: viewModel.age,
-            onChanged: viewModel.setAge,
-            hint: 'Your age in years',
-            keyboardType: TextInputType.number,
+            unit: 'years',
+            onTap: () async {
+              await _showNumberPicker(
+                context: context,
+                title: 'Select Your Age',
+                min: 10,
+                max: 100,
+                current: int.tryParse(viewModel.age) ?? 25,
+                onSelected: (val) => viewModel.setAge(val.toString()),
+              );
+            },
             theme: theme,
             colorScheme: colorScheme,
           ),
@@ -291,22 +437,40 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             ),
           ),
           const SizedBox(height: 40),
-          _buildTextField(
-            label: 'Height (cm)',
+          _buildPickerField(
+            // Height uses the picker
+            label: 'Height',
             value: viewModel.height,
-            onChanged: viewModel.setHeight,
-            hint: 'Your height in centimeters',
-            keyboardType: TextInputType.number,
+            unit: 'cm',
+            onTap: () async {
+              await _showNumberPicker(
+                context: context,
+                title: 'Select Your Height',
+                min: 100,
+                max: 250,
+                current: int.tryParse(viewModel.height) ?? 170,
+                onSelected: (val) => viewModel.setHeight(val.toString()),
+              );
+            },
             theme: theme,
             colorScheme: colorScheme,
           ),
           const SizedBox(height: 20),
-          _buildTextField(
-            label: 'Weight (kg)',
+          _buildPickerField(
+            // Weight uses the picker
+            label: 'Weight',
             value: viewModel.weight,
-            onChanged: viewModel.setWeight,
-            hint: 'Your current weight in kilograms',
-            keyboardType: TextInputType.number,
+            unit: 'kg',
+            onTap: () async {
+              await _showNumberPicker(
+                context: context,
+                title: 'Select Your Weight',
+                min: 30,
+                max: 200,
+                current: int.tryParse(viewModel.weight) ?? 70,
+                onSelected: (val) => viewModel.setWeight(val.toString()),
+              );
+            },
             theme: theme,
             colorScheme: colorScheme,
           ),
@@ -397,6 +561,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
     );
   }
 
+  // Kept _buildTextField for Display Name
   Widget _buildTextField({
     required String label,
     required String value,
@@ -473,19 +638,27 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             color: colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: DropdownButton<String>(
-            value: value.isEmpty ? null : value,
-            onChanged: (newValue) => onChanged(newValue ?? ''),
-            isExpanded: true,
-            underline: Container(),
-            dropdownColor: colorScheme.surfaceVariant,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurface,
+          child: DropdownButtonHideUnderline(
+            // Hides the default underline
+            child: DropdownButton<String>(
+              value: value.isEmpty ? null : value,
+              hint: Text(
+                'Select $label',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                ),
+              ),
+              onChanged: (newValue) => onChanged(newValue ?? ''),
+              isExpanded: true,
+              dropdownColor: colorScheme.surfaceVariant,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
+              ),
+              items:
+                  options.map((option) {
+                    return DropdownMenuItem(value: option, child: Text(option));
+                  }).toList(),
             ),
-            items:
-                options.map((option) {
-                  return DropdownMenuItem(value: option, child: Text(option));
-                }).toList(),
           ),
         ),
       ],
@@ -523,6 +696,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
         activeColor: colorScheme.primary,
         tileColor: colorScheme.surfaceVariant,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );
   }
@@ -558,18 +732,21 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
   }
 
   void _nextPage(UserOnboardingViewModel viewModel) {
+    FocusScope.of(context).unfocus(); // Dismiss keyboard before navigating
     if (_currentPage < 3) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
-      // Complete onboarding
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       final currentUser = authViewModel.currentUser;
 
       if (currentUser != null) {
-        viewModel.saveUserProfile(currentUser.id, currentUser.email);
+        viewModel.saveUserProfile(
+          currentUser.id,
+          currentUser.email ?? '',
+        ); // Handle nullable email
       }
     }
   }
