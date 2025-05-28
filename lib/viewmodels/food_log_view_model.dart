@@ -18,14 +18,17 @@ class FoodLogViewModel extends ChangeNotifier {
 
   String? get userId => _authService.currentUser?.uid;
 
+  int _todayCalories = 0;
+  int get todayCalories => _todayCalories;
+
   // This method allows explicit initialization with a user ID
   void initializeForUser(String userId) {
     try {
       print('Initializing food log for user: $userId'); // Debug log
-      
+
       // Cancel any existing subscription to prevent memory leaks
       _streamSubscription?.cancel();
-      
+
       _entriesStream = _foodRepository.getFoodEntriesStream(userId);
 
       // Add proper error handling to the stream listener
@@ -64,7 +67,15 @@ class FoodLogViewModel extends ChangeNotifier {
     if (userId != null && entry.id != null) {
       await _foodRepository.deleteFoodEntry(userId!, entry.id!);
       // The stream listener will update _entries automatically
+      await fetchTodayCalories(
+        userId!,
+      ); // Refresh today's calories after deletion
     }
+  }
+
+  Future<void> fetchTodayCalories(String userId) async {
+    _todayCalories = await _foodRepository.getTodayCalories(userId);
+    notifyListeners();
   }
 
   @override

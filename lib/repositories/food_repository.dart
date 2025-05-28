@@ -58,4 +58,26 @@ class FoodRepository {
       rethrow;
     }
   }
+
+  // Get total calories for today for a specific user
+  Future<int> getTodayCalories(String userId) async {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+
+    final snapshot =
+        await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('calorie_entries')
+            .where('date', isGreaterThanOrEqualTo: startOfDay)
+            .where('date', isLessThanOrEqualTo: endOfDay)
+            .get();
+
+    int total = 0;
+    for (var doc in snapshot.docs) {
+      total += (doc.data()['calories'] ?? 0) as int;
+    }
+    return total;
+  }
 }

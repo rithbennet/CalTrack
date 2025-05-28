@@ -37,6 +37,9 @@ class _HomeScreenState extends State<HomeScreen> {
       userViewModel.loadUserProfile(authViewModel.currentUser!.id);
       // Initialize food entries stream for the current user
       foodLogViewModel.initializeForUser(authViewModel.currentUser!.id);
+      foodLogViewModel.fetchTodayCalories(
+        authViewModel.currentUser!.id,
+      ); // Fetch today's calories
     }
   }
 
@@ -66,7 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Get actual calorie target from user profile
         final dailyTarget = userProfile?.effectiveDailyCalorieTarget ?? 2000;
-        const currentCalories = 500; // This will come from calorie tracking
+        final foodLogViewModel = Provider.of<FoodLogViewModel>(context);
+        final currentCalories = foodLogViewModel.todayCalories;
         final percentage = ((currentCalories / dailyTarget) * 100).round();
 
         return Scaffold(
@@ -359,7 +363,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 context,
                                 listen: false,
                               );
+                          final authViewModel = Provider.of<AuthViewModel>(
+                            context,
+                            listen: false,
+                          );
                           foodLogViewModel.addEntry(result);
+                          if (authViewModel.currentUser != null) {
+                            await foodLogViewModel.fetchTodayCalories(
+                              authViewModel.currentUser!.id,
+                            ); // Refresh calories
+                          }
                         }
                       },
                       icon: const Icon(Icons.add, color: Colors.deepOrange),
