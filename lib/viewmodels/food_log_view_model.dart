@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/food_entry.dart';
 import '../repositories/food_repository.dart';
@@ -13,31 +14,22 @@ class FoodLogViewModel extends ChangeNotifier {
   Stream<List<FoodEntry>>? _entriesStream;
   Stream<List<FoodEntry>>? get entriesStream => _entriesStream;
 
+  StreamSubscription<List<FoodEntry>>? _streamSubscription;
+
   String? get userId => _authService.currentUser?.uid;
-
-  FoodLogViewModel() {
-    _initEntriesStream();
-  }
-
-  void _initEntriesStream() {
-    if (userId != null) {
-      _entriesStream = _foodRepository.getFoodEntriesStream(userId!);
-      // Listen to the stream and update _entries list when data changes
-      _entriesStream!.listen((entries) {
-        _entries = entries;
-        notifyListeners();
-      });
-    }
-  }
 
   // This method allows explicit initialization with a user ID
   void initializeForUser(String userId) {
     try {
       print('Initializing food log for user: $userId'); // Debug log
+      
+      // Cancel any existing subscription to prevent memory leaks
+      _streamSubscription?.cancel();
+      
       _entriesStream = _foodRepository.getFoodEntriesStream(userId);
 
       // Add proper error handling to the stream listener
-      _entriesStream!.listen(
+      _streamSubscription = _entriesStream!.listen(
         (data) => _handleData(data),
         onError: (error) => _handleError(error),
       );
@@ -73,5 +65,11 @@ class FoodLogViewModel extends ChangeNotifier {
       await _foodRepository.deleteFoodEntry(userId!, entry.id!);
       // The stream listener will update _entries automatically
     }
+  }
+
+  @override
+  void dispose() {
+    _streamSubscription?.cancel();
+    super.dispose();
   }
 }

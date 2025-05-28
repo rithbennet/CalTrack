@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
 import '../../models/food_entry.dart';
 import '../../viewmodels/food_log_view_model.dart';
 import '../../viewmodels/auth_view_model.dart';
 import 'add_food_screen.dart';
 import '../../theme/app_theme.dart';
-import '../../firebase_options.dart';
 
 class FoodLogScreen extends StatefulWidget {
   const FoodLogScreen({super.key});
