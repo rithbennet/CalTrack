@@ -5,6 +5,7 @@ import 'package:caltrack/viewmodels/auth_view_model.dart';
 import 'package:caltrack/viewmodels/user_view_model.dart';
 import 'package:caltrack/view/profile_screen.dart';
 import 'food_log/food_log_screen.dart';
+import 'barcode/barcode_scanner_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -339,7 +340,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const FoodLogScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const FoodLogScreen(),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.add, color: Colors.deepOrange),
@@ -453,22 +456,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: 'Search',
               ),
               BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  'assets/icons/QR Scan.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.grey,
-                    BlendMode.srcIn,
+                icon: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BarcodeScannerScreen(),
+                      ),
+                    );
+                  },
+                  child: SvgPicture.asset(
+                    'assets/icons/QR Scan.svg',
+                    height: 24,
+                    width: 24,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.grey,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
-                activeIcon: SvgPicture.asset(
-                  'assets/icons/QR Scan.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.srcIn,
+                activeIcon: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BarcodeScannerScreen(),
+                      ),
+                    );
+                  },
+                  child: SvgPicture.asset(
+                    'assets/icons/Qr Scan.svg',
+                    height: 24,
+                    width: 24,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
                 label: 'Scan',

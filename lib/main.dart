@@ -10,6 +10,7 @@ import 'package:caltrack/viewmodels/auth_view_model.dart';
 import 'package:caltrack/viewmodels/user_view_model.dart';
 import 'package:caltrack/theme/app_theme.dart';
 import 'package:caltrack/viewmodels/user_onboarding_viewmodel.dart';
+import 'package:caltrack/viewmodels/barcode_view_model.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserViewModel()),
         ChangeNotifierProvider(create: (_) => UserOnboardingViewModel()),
         ChangeNotifierProvider(create: (_) => FoodLogViewModel()),
+        ChangeNotifierProvider(create: (_) => BarcodeViewModel()),
         // Add other providers here
       ],
       child: const MyApp(),
