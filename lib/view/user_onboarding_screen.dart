@@ -745,7 +745,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
       if (currentUser != null) {
         viewModel.saveUserProfile(
           currentUser.id,
-          currentUser.email ?? '',
+          currentUser.email,
         ); // Handle nullable email
       }
     }
