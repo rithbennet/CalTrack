@@ -650,7 +650,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
               ),
               onChanged: (newValue) => onChanged(newValue ?? ''),
               isExpanded: true,
-              dropdownColor: colorScheme.surfaceVariant,
+              dropdownColor: colorScheme.surfaceContainerHighest,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: colorScheme.onSurface,
               ),
@@ -694,7 +694,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
         groupValue: groupValue,
         onChanged: (newValue) => onChanged(newValue ?? ''),
         activeColor: colorScheme.primary,
-        tileColor: colorScheme.surfaceVariant,
+        tileColor: colorScheme.surfaceContainerHighest,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),

@@ -18,6 +18,7 @@ class FoodRepository {
             'createdAt': FieldValue.serverTimestamp(),
             'notes': entry.notes ?? '',
           });
+      print('Added food entry for user $userId: ${entry.name}'); // Debug log
     } catch (e) {
       print('Error adding food entry: $e');
       rethrow;
@@ -26,6 +27,7 @@ class FoodRepository {
 
   // Get stream of food entries for a specific user
   Stream<List<FoodEntry>> getFoodEntriesStream(String userId) {
+    print('Getting food entries stream for user: $userId'); // Debug log
     return _firestore
         .collection('users')
         .doc(userId)
@@ -33,6 +35,7 @@ class FoodRepository {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
+          print('Received ${snapshot.docs.length} food entries'); // Debug log
           return snapshot.docs.map((doc) {
             final data = doc.data();
             data['id'] = doc.id; // Add document ID to the data
@@ -56,22 +59,25 @@ class FoodRepository {
     }
   }
 
-  // Update a food entry
-  Future<void> updateFoodEntry(String userId, FoodEntry entry) async {
-    try {
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('calorie_entries')
-          .doc(entry.id)
-          .update({
-            'foodName': entry.name,
-            'calories': entry.calories,
-            'notes': entry.notes ?? '',
-          });
-    } catch (e) {
-      print('Error updating food entry: $e');
-      rethrow;
+  // Get total calories for today for a specific user
+  Future<int> getTodayCalories(String userId) async {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+
+    final snapshot =
+        await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('calorie_entries')
+            .where('date', isGreaterThanOrEqualTo: startOfDay)
+            .where('date', isLessThanOrEqualTo: endOfDay)
+            .get();
+
+    int total = 0;
+    for (var doc in snapshot.docs) {
+      total += (doc.data()['calories'] ?? 0) as int;
     }
+    return total;
   }
 }
