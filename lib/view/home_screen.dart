@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:caltrack/viewmodels/auth_view_model.dart';
 import 'package:caltrack/viewmodels/user_view_model.dart';
+import 'package:caltrack/viewmodels/food_log_view_model.dart';
 import 'package:caltrack/view/profile_screen.dart';
 import 'food_log/food_log_screen.dart';
+import 'food_log/add_food_screen.dart';
+import 'package:caltrack/models/food_entry.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,9 +28,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void _loadUserData() {
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
     final userViewModel = Provider.of<UserViewModel>(context, listen: false);
+    final foodLogViewModel = Provider.of<FoodLogViewModel>(
+      context,
+      listen: false,
+    );
 
     if (authViewModel.currentUser != null) {
       userViewModel.loadUserProfile(authViewModel.currentUser!.id);
+      // Initialize food entries stream for the current user
+      foodLogViewModel.initializeForUser(authViewModel.currentUser!.id);
     }
   }
 
@@ -336,16 +345,130 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // Food tracking feature
                     TextButton.icon(
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        final result = await Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const FoodLogScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const AddFoodScreen(),
+                          ),
                         );
+                        if (result is FoodEntry) {
+                          // Add the entry to the food log
+                          final foodLogViewModel =
+                              Provider.of<FoodLogViewModel>(
+                                context,
+                                listen: false,
+                              );
+                          foodLogViewModel.addEntry(result);
+                        }
                       },
                       icon: const Icon(Icons.add, color: Colors.deepOrange),
                       label: const Text(
-                        'Food Log',
+                        'Add Food', // Changed text to better reflect the action
                         style: TextStyle(color: Colors.deepOrange),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Recent Food Entries Carousel
+                    Consumer<FoodLogViewModel>(
+                      builder: (context, foodLogViewModel, child) {
+                        print(
+                          "Building carousel: ${foodLogViewModel.entries.length} entries",
+                        ); // Debug log
+                        final entries = foodLogViewModel.entries;
+                        if (entries.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              'No recent entries. Add your first meal!',
+                              style: TextStyle(color: Colors.grey[400]),
+                            ),
+                          );
+                        }
+
+                        return SizedBox(
+                          height: 120,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount:
+                                entries.length > 5
+                                    ? 5
+                                    : entries
+                                        .length, // Show max 5 recent entries
+                            itemBuilder: (context, index) {
+                              final entry = entries[index];
+                              return Container(
+                                width: 160,
+                                margin: const EdgeInsets.only(right: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[850],
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.deepOrange.withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        entry.name,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        '${entry.calories} kcal',
+                                        style: const TextStyle(
+                                          color: Colors.deepOrange,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      if (entry.date != null)
+                                        Text(
+                                          '${entry.date!.day}/${entry.date!.month}',
+                                          style: TextStyle(
+                                            color: Colors.grey[400],
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const FoodLogScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'View all entries →',
+                          style: TextStyle(color: Colors.deepOrange),
+                        ),
                       ),
                     ),
 

@@ -22,21 +22,56 @@ class FoodLogViewModel extends ChangeNotifier {
   void _initEntriesStream() {
     if (userId != null) {
       _entriesStream = _foodRepository.getFoodEntriesStream(userId!);
+      // Listen to the stream and update _entries list when data changes
+      _entriesStream!.listen((entries) {
+        _entries = entries;
+        notifyListeners();
+      });
+    }
+  }
+
+  // This method allows explicit initialization with a user ID
+  void initializeForUser(String userId) {
+    try {
+      print('Initializing food log for user: $userId'); // Debug log
+      _entriesStream = _foodRepository.getFoodEntriesStream(userId);
+
+      // Add proper error handling to the stream listener
+      _entriesStream!.listen(
+        (data) => _handleData(data),
+        onError: (error) => _handleError(error),
+      );
+    } catch (e) {
+      print('Exception initializing food log: $e');
+      _entries = [];
       notifyListeners();
     }
+  }
+
+  // Add these helper methods to handle the stream data and errors
+  void _handleData(List<FoodEntry> data) {
+    print('Received ${data.length} entries'); // Debug log
+    _entries = data;
+    notifyListeners();
+  }
+
+  void _handleError(dynamic error) {
+    print('Error in food entries stream: $error'); // Debug error
+    _entries = [];
+    notifyListeners();
   }
 
   Future<void> addEntry(FoodEntry entry) async {
     if (userId != null) {
       await _foodRepository.addFoodEntry(userId!, entry);
-      // The stream will update automatically
+      // The stream listener will update _entries automatically
     }
   }
 
   Future<void> removeEntry(FoodEntry entry) async {
     if (userId != null && entry.id != null) {
       await _foodRepository.deleteFoodEntry(userId!, entry.id!);
-      // The stream will update automatically
+      // The stream listener will update _entries automatically
     }
   }
 }
