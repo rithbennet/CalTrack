@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
 import '../../viewmodels/barcode_view_model.dart';
 
 class BarcodeScannerScreen extends StatefulWidget {
@@ -12,6 +14,7 @@ class BarcodeScannerScreen extends StatefulWidget {
 
 class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
   bool _isScanning = true;
+  final MobileScannerController _controller = MobileScannerController();
 
   @override
   Widget build(BuildContext context) {
@@ -21,17 +24,30 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
       appBar: AppBar(title: const Text('Scan Barcode')),
       body:
           _isScanning
-              ? MobileScanner(
-                onDetect: (BarcodeCapture capture) {
-                  // Call an async handler inside but keep this callback sync
-                  _handleBarcode(capture, barcodeVM);
-                },
+              ? Stack(
+                children: [
+                  MobileScanner(
+                    controller: _controller,
+                    onDetect: (BarcodeCapture capture) {
+                      _handleBarcode(capture, barcodeVM);
+                    },
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.photo),
+                      label: const Text('Scan from Gallery'),
+                      onPressed: () => _scanFromGallery(barcodeVM),
+                    ),
+                  ),
+                ],
               )
               : _buildFoodInfo(context, barcodeVM),
     );
   }
 
-  // Async function handling barcode processing
   Future<void> _handleBarcode(
     BarcodeCapture capture,
     BarcodeViewModel vm,
@@ -44,6 +60,29 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     if (code != null) {
       setState(() => _isScanning = false);
       await vm.fetchFoodInfo(code);
+    }
+  }
+
+  Future<void> _scanFromGallery(BarcodeViewModel vm) async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      final BarcodeCapture? capture = await _controller.analyzeImage(
+        image.path,
+      );
+
+      if (capture != null && capture.barcodes.isNotEmpty) {
+        final String? code = capture.barcodes.first.rawValue;
+        if (code != null) {
+          setState(() => _isScanning = false);
+          await vm.fetchFoodInfo(code);
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No barcode found in the image.')),
+        );
+      }
     }
   }
 
@@ -65,14 +104,13 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              // You can add logic to save this to user's food log here
+              // Add logic to save to user's food log here
               Navigator.pop(context);
             },
             child: const Text('Add to Food Log'),
           ),
           ElevatedButton(
             onPressed: () {
-              // Restart scanning
               vm.clear();
               setState(() => _isScanning = true);
             },
