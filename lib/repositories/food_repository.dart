@@ -13,7 +13,14 @@ class FoodRepository {
           .collection('calorie_entries')
           .add({
             'foodName': entry.name,
-            'calories': entry.calories,
+            'servings': entry.servings,
+            'servingUnit': entry.servingUnit,
+            'caloriesPerServing': entry.caloriesPerServing,
+            'protein': entry.protein,
+            'carbs': entry.carbs,
+            'fat': entry.fat,
+            'totalCalories': entry.totalCalories, // For backward compatibility
+            'calories': entry.totalCalories, // Keep old field for compatibility
             'date': DateTime.now(),
             'createdAt': FieldValue.serverTimestamp(),
             'notes': entry.notes ?? '',
@@ -76,7 +83,10 @@ class FoodRepository {
 
     int total = 0;
     for (var doc in snapshot.docs) {
-      total += (doc.data()['calories'] ?? 0) as int;
+      final data = doc.data();
+      // Try new field first, fall back to old field for backward compatibility
+      int calories = (data['totalCalories'] ?? data['calories'] ?? 0) as int;
+      total += calories;
     }
     return total;
   }

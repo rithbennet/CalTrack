@@ -115,7 +115,13 @@ class _FoodLogScreenState extends State<FoodLogScreen> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${entry.calories} kcal'),
+                      Text(
+                        '${entry.servings} ${entry.servingUnit} • ${entry.totalCalories} kcal',
+                      ),
+                      Text(
+                        'P: ${entry.protein.toStringAsFixed(1)}g • C: ${entry.carbs.toStringAsFixed(1)}g • F: ${entry.fat.toStringAsFixed(1)}g',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
                       if (entry.notes != null && entry.notes!.isNotEmpty)
                         Text(
                           entry.notes!,

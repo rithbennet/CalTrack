@@ -78,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.black87,
           body: SafeArea(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -442,13 +443,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      Text(
-                                        '${entry.calories} kcal',
-                                        style: const TextStyle(
-                                          color: Colors.deepOrange,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${entry.servings} ${entry.servingUnit}',
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${entry.totalCalories} kcal',
+                                            style: const TextStyle(
+                                              color: Colors.deepOrange,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       if (entry.date != null)
                                         Text(
