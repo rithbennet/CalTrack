@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/food_entry.dart';
-import '../../theme/app_theme.dart';
+//import '../../theme/app_theme.dart';
 
 class AddFoodScreen extends StatefulWidget {
   const AddFoodScreen({super.key});
@@ -44,8 +44,11 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Food Name'),
-                validator: (value) =>
-                value == null || value.trim().isEmpty ? 'Enter a name' : null,
+                validator:
+                    (value) =>
+                        value == null || value.trim().isEmpty
+                            ? 'Enter a name'
+                            : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -63,10 +66,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                 },
               ),
               const Spacer(),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Done'),
-              ),
+              ElevatedButton(onPressed: _submit, child: const Text('Done')),
             ],
           ),
         ),
