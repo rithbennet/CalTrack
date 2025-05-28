@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:caltrack/viewmodels/auth_view_model.dart';
 import 'package:caltrack/viewmodels/user_view_model.dart';
 import 'package:caltrack/view/profile_screen.dart';
+import 'food_log/food_log_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -331,43 +332,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 16),
 
-                    // Placeholder message for upcoming food tracking feature
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey[700]!),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.restaurant_menu,
-                            color: Colors.grey[500],
-                            size: 48,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Coming Soon!',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Start logging your meals and track your daily calorie intake.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey[500],
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+                    // Food tracking feature
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const FoodLogScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.add, color: Colors.deepOrange),
+                      label: const Text(
+                        'Food Log',
+                        style: TextStyle(color: Colors.deepOrange),
                       ),
                     ),
 
