@@ -5,6 +5,7 @@ import '../../viewmodels/food_log_view_model.dart';
 import '../../viewmodels/auth_view_model.dart';
 import 'add_food_screen.dart';
 import '../../theme/app_theme.dart';
+import '../../services/logger_service.dart';
 
 class FoodLogScreen extends StatefulWidget {
   const FoodLogScreen({super.key});
@@ -15,6 +16,7 @@ class FoodLogScreen extends StatefulWidget {
 
 class _FoodLogScreenState extends State<FoodLogScreen> {
   bool _timedOut = false;
+  final LoggerService _logger = LoggerService();
 
   @override
   void initState() {
@@ -41,7 +43,7 @@ class _FoodLogScreenState extends State<FoodLogScreen> {
         stream: viewModel.entriesStream,
         builder: (context, snapshot) {
           // Debug print
-          print(
+          _logger.debug(
             'Stream state: ${snapshot.connectionState}, hasData: ${snapshot.hasData}, error: ${snapshot.error}',
           );
 

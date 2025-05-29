@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'logger_service.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final LoggerService _logger = LoggerService();
 
   // Get current user ID
   String? get currentUserId => _auth.currentUser?.uid;
@@ -26,7 +28,7 @@ class FirestoreService {
 
       return doc.exists;
     } catch (e) {
-      print('Firestore connection test failed: $e');
+      _logger.error('Firestore connection test failed', e);
       return false;
     }
   }
@@ -45,7 +47,7 @@ class FirestoreService {
 
       await _db.collection(collection).doc(documentId).set(data);
     } catch (e) {
-      print('Error creating document in $collection: $e');
+      _logger.error('Error creating document in $collection', e);
       rethrow;
     }
   }
@@ -65,7 +67,7 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      print('Error getting document from $collection: $e');
+      _logger.error('Error getting document from $collection', e);
       rethrow;
     }
   }
@@ -80,7 +82,7 @@ class FirestoreService {
       data['updatedAt'] = FieldValue.serverTimestamp();
       await _db.collection(collection).doc(documentId).update(data);
     } catch (e) {
-      print('Error updating document in $collection: $e');
+      _logger.error('Error updating document in $collection', e);
       rethrow;
     }
   }
@@ -93,7 +95,7 @@ class FirestoreService {
     try {
       await _db.collection(collection).doc(documentId).delete();
     } catch (e) {
-      print('Error deleting document from $collection: $e');
+      _logger.error('Error deleting document from $collection', e);
       rethrow;
     }
   }
@@ -108,7 +110,7 @@ class FirestoreService {
           await _db.collection(collection).doc(documentId).get();
       return doc.exists;
     } catch (e) {
-      print('Error checking document existence in $collection: $e');
+      _logger.error('Error checking document existence in $collection', e);
       return false;
     }
   }
@@ -153,7 +155,7 @@ class FirestoreService {
         return data;
       }).toList();
     } catch (e) {
-      print('Error getting documents from $collection: $e');
+      _logger.error('Error getting documents from $collection', e);
       rethrow;
     }
   }
@@ -183,7 +185,7 @@ class FirestoreService {
         }).toList();
       });
     } catch (e) {
-      print('Error streaming documents from $collection: $e');
+      _logger.error('Error streaming documents from $collection', e);
       rethrow;
     }
   }
@@ -200,7 +202,7 @@ class FirestoreService {
       DocumentReference docRef = await _db.collection(collection).add(data);
       return docRef.id;
     } catch (e) {
-      print('Error creating document with auto ID in $collection: $e');
+      _logger.error('Error creating document with auto ID in $collection', e);
       rethrow;
     }
   }
@@ -237,7 +239,7 @@ class FirestoreService {
 
       await batch.commit();
     } catch (e) {
-      print('Error performing batch operations: $e');
+      _logger.error('Error performing batch operations', e);
       rethrow;
     }
   }

@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import '../models/food_entry.dart';
 import '../repositories/food_repository.dart';
 import '../services/auth_service.dart';
+import '../services/logger_service.dart';
 
 class FoodLogViewModel extends ChangeNotifier {
   final FoodRepository _foodRepository = FoodRepository();
   final AuthService _authService = AuthService();
+  final LoggerService _logger = LoggerService();
 
   List<FoodEntry> _entries = [];
   List<FoodEntry> get entries => _entries;
@@ -24,7 +26,7 @@ class FoodLogViewModel extends ChangeNotifier {
   // This method allows explicit initialization with a user ID
   void initializeForUser(String userId) {
     try {
-      print('Initializing food log for user: $userId'); // Debug log
+      _logger.debug('Initializing food log for user: $userId');
 
       // Cancel any existing subscription to prevent memory leaks
       _streamSubscription?.cancel();
@@ -37,7 +39,7 @@ class FoodLogViewModel extends ChangeNotifier {
         onError: (error) => _handleError(error),
       );
     } catch (e) {
-      print('Exception initializing food log: $e');
+      _logger.error('Exception initializing food log', e);
       _entries = [];
       notifyListeners();
     }
@@ -45,13 +47,13 @@ class FoodLogViewModel extends ChangeNotifier {
 
   // Add these helper methods to handle the stream data and errors
   void _handleData(List<FoodEntry> data) {
-    print('Received ${data.length} entries'); // Debug log
+    _logger.debug('Received ${data.length} entries');
     _entries = data;
     notifyListeners();
   }
 
   void _handleError(dynamic error) {
-    print('Error in food entries stream: $error'); // Debug error
+    _logger.error('Error in food entries stream', error);
     _entries = [];
     notifyListeners();
   }

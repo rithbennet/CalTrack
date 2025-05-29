@@ -829,8 +829,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             8,
                                           ),
                                           border: Border.all(
-                                            color: Colors.deepOrange
-                                                .withOpacity(0.3),
+                                            color: Colors.deepOrange.withValues(
+                                              alpha: 0.3,
+                                            ),
                                             width: 1,
                                           ),
                                         ),
@@ -976,13 +977,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ) ??
                                     false;
 
-                                if (shouldLogout && mounted) {
+                                if (shouldLogout && context.mounted) {
+                                  // Capture navigator reference before async operation
+                                  final navigator = Navigator.of(context);
                                   await authViewModel.signOut();
                                   // Navigate to login screen or home after logout
-                                  if (mounted) {
-                                    Navigator.of(
-                                      context,
-                                    ).pushNamedAndRemoveUntil(
+                                  if (context.mounted) {
+                                    navigator.pushNamedAndRemoveUntil(
                                       '/',
                                       (route) => false,
                                     );

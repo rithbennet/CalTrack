@@ -5,10 +5,13 @@ import 'package:caltrack/viewmodels/auth_view_model.dart';
 import 'package:caltrack/viewmodels/user_view_model.dart';
 import 'package:caltrack/viewmodels/food_log_view_model.dart';
 import 'package:caltrack/view/profile_screen.dart';
-import 'food_log/food_log_screen.dart';
-import 'food_log/add_food_screen.dart';
-import 'package:caltrack/models/food_entry.dart';
 import 'barcode/barcode_scanner_screen.dart';
+// Import custom components
+import 'components/home/user_greeting_header.dart';
+import 'components/home/progress_cards_carousel.dart';
+import 'components/home/food_tracking_section.dart';
+import 'components/home/section_header.dart';
+import 'components/home/user_info_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -84,465 +87,54 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // User greeting section with avatar
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                greeting,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                ),
-                              ),
-                              Text(
-                                userName,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ],
+                    // User greeting section with avatar - Now using component
+                    UserGreetingHeader(
+                      greeting: greeting,
+                      userName: userName,
+                      userProfile: userProfile,
+                      onAvatarTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ProfileScreen(),
                           ),
-                        ),
-                        SizedBox(
-                          width: 50,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const ProfileScreen(),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[800],
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.deepOrange.withOpacity(0.3),
-                                  width: 2,
-                                ),
-                              ),
-                              child:
-                                  userProfile?.photoURL != null
-                                      ? ClipOval(
-                                        child: Image.network(
-                                          userProfile!.photoURL!,
-                                          width: 50,
-                                          height: 50,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  const Icon(
-                                                    Icons.person,
-                                                    color: Colors.white,
-                                                  ),
-                                        ),
-                                      )
-                                      : const Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                      ),
-                            ),
-                          ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 20),
 
-                    // Swipable cards: My Plan for Today & Calories Progress
-                    SizedBox(
-                      height: 185, // Increased height to fix overflow
-                      child: PageView(
-                        controller: PageController(viewportFraction: 0.92),
-                        children: [
-                          // My Plan for Today Card
-                          Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            padding: const EdgeInsets.all(
-                              20,
-                            ), // Reduced padding for better fit
-                            decoration: BoxDecoration(
-                              color: Colors.deepOrange,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: [
-                                // Left side - text
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Text(
-                                        'My Plan\nFor Today',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        userProfile?.effectiveDailyCalorieTarget !=
-                                                null
-                                            ? 'Daily Target: $dailyTarget cal'
-                                            : 'Complete profile to set target',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontStyle:
-                                              userProfile?.effectiveDailyCalorieTarget ==
-                                                      null
-                                                  ? FontStyle.italic
-                                                  : FontStyle.normal,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Right side - progress circle or setup prompt
-                                userProfile?.effectiveDailyCalorieTarget != null
-                                    ? Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: 100,
-                                          height: 100,
-                                          child: CircularProgressIndicator(
-                                            value: percentage / 100,
-                                            strokeWidth: 12,
-                                            backgroundColor:
-                                                Colors.deepOrange.shade800,
-                                            valueColor:
-                                                const AlwaysStoppedAnimation<
-                                                  Color
-                                                >(Colors.white),
-                                          ),
-                                        ),
-                                        Text(
-                                          '$percentage%',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                    : GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (context) =>
-                                                    const ProfileScreen(),
-                                          ),
-                                        );
-                                      },
-                                      child: Container(
-                                        width: 100,
-                                        height: 100,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.2),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.settings,
-                                          color: Colors.white,
-                                          size: 40,
-                                        ),
-                                      ),
-                                    ),
-                              ],
-                            ),
-                          ),
-                          // Calories Eaten / Goal Card
-                          Container(
-                            margin: const EdgeInsets.only(left: 12),
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[900],
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Calories Eaten',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        '$currentCalories / $dailyTarget cal',
-                                        style: const TextStyle(
-                                          color: Colors.deepOrange,
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      LinearProgressIndicator(
-                                        value: (currentCalories / dailyTarget)
-                                            .clamp(0.0, 1.0),
-                                        backgroundColor: Colors.grey[800],
-                                        valueColor:
-                                            const AlwaysStoppedAnimation<Color>(
-                                              Colors.deepOrange,
-                                            ),
-                                        minHeight: 10,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Icon(
-                                  Icons.local_fire_department,
-                                  color: Colors.deepOrange,
-                                  size: 48,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Food Tracking Coming Soon Section
-                    const Text(
-                      'Food Tracking',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Food tracking feature
-                    TextButton.icon(
-                      onPressed: () async {
-                        final result = await Navigator.push(
+                    // Swipable cards - Now using component
+                    ProgressCardsCarousel(
+                      userProfile: userProfile,
+                      percentage: percentage,
+                      currentCalories: currentCalories,
+                      dailyTarget: dailyTarget,
+                      onSetupTap: () {
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const AddFoodScreen(),
-                          ),
-                        );
-                        if (result is FoodEntry) {
-                          // Add the entry to the food log
-                          final foodLogViewModel =
-                              Provider.of<FoodLogViewModel>(
-                                context,
-                                listen: false,
-                              );
-                          final authViewModel = Provider.of<AuthViewModel>(
-                            context,
-                            listen: false,
-                          );
-                          foodLogViewModel.addEntry(result);
-                          if (authViewModel.currentUser != null) {
-                            await foodLogViewModel.fetchTodayCalories(
-                              authViewModel.currentUser!.id,
-                            ); // Refresh calories
-                          }
-                        }
-                      },
-                      icon: const Icon(Icons.add, color: Colors.deepOrange),
-                      label: const Text(
-                        'Add Food', // Changed text to better reflect the action
-                        style: TextStyle(color: Colors.deepOrange),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Recent Food Entries Carousel
-                    Consumer<FoodLogViewModel>(
-                      builder: (context, foodLogViewModel, child) {
-                        print(
-                          "Building carousel: ${foodLogViewModel.entries.length} entries",
-                        ); // Debug log
-                        final entries = foodLogViewModel.entries;
-                        if (entries.isEmpty) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Text(
-                              'No recent entries. Add your first meal!',
-                              style: TextStyle(color: Colors.grey[400]),
-                            ),
-                          );
-                        }
-
-                        return SizedBox(
-                          height: 120,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount:
-                                entries.length > 5
-                                    ? 5
-                                    : entries
-                                        .length, // Show max 5 recent entries
-                            itemBuilder: (context, index) {
-                              final entry = entries[index];
-                              return Container(
-                                width: 160,
-                                margin: const EdgeInsets.only(right: 16),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[850],
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.deepOrange.withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        entry.name,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '${entry.servings} ${entry.servingUnit}',
-                                            style: TextStyle(
-                                              color: Colors.grey[400],
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          Text(
-                                            '${entry.totalCalories} kcal',
-                                            style: const TextStyle(
-                                              color: Colors.deepOrange,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      if (entry.date != null)
-                                        Text(
-                                          '${entry.date!.day}/${entry.date!.month}',
-                                          style: TextStyle(
-                                            color: Colors.grey[400],
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
+                            builder: (context) => const ProfileScreen(),
                           ),
                         );
                       },
-                    ),
-
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const FoodLogScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'View all entries →',
-                          style: TextStyle(color: Colors.deepOrange),
-                        ),
-                      ),
                     ),
 
                     const SizedBox(height: 32),
 
-                    // User Profile Section
-                    const Text(
-                      'Profile Information',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    // Food Tracking Section - Using component
+                    const FoodTrackingSection(),
 
+                    const SizedBox(height: 32),
+
+                    // User Profile Section - Using components
+                    const SectionHeader(title: 'Profile Information'),
                     const SizedBox(height: 16),
 
-                    // User Info Card
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildInfoRow(
-                            'Email',
-                            currentUser?.email ?? 'Not available',
-                          ),
-                          const SizedBox(height: 16),
-                          _buildInfoRow(
-                            'Display Name',
-                            userProfile?.displayName ??
-                                currentUser?.displayName ??
-                                'Not set',
-                          ),
-                          const SizedBox(height: 16),
-                          _buildInfoRow(
-                            'Member Since',
-                            userProfile?.createdAt != null
-                                ? _formatDate(userProfile!.createdAt!)
-                                : 'Recently joined',
-                          ),
-                        ],
-                      ),
+                    // User Info Card - Using component
+                    UserInfoCard(
+                      currentUser: currentUser,
+                      userProfile: userProfile,
                     ),
 
                     const SizedBox(height: 20),
@@ -560,6 +152,29 @@ class _HomeScreenState extends State<HomeScreen> {
             type: BottomNavigationBarType.fixed,
             showSelectedLabels: false,
             showUnselectedLabels: false,
+            currentIndex: 0, // Home screen is selected
+            onTap: (index) {
+              switch (index) {
+                case 0:
+                  // Already on home screen, do nothing
+                  break;
+                case 1:
+                  // Search functionality - you can implement this later
+                  break;
+                case 2:
+                  // Scan functionality
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BarcodeScannerScreen(),
+                    ),
+                  );
+                  break;
+                case 3:
+                  // Files functionality - you can implement this later
+                  break;
+              }
+            },
             items: [
               BottomNavigationBarItem(
                 icon: SvgPicture.asset(
@@ -604,42 +219,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: 'Search',
               ),
               BottomNavigationBarItem(
-                icon: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BarcodeScannerScreen(),
-                      ),
-                    );
-                  },
-                  child: SvgPicture.asset(
-                    'assets/icons/QR Scan.svg',
-                    height: 24,
-                    width: 24,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.grey,
-                      BlendMode.srcIn,
-                    ),
+                icon: SvgPicture.asset(
+                  'assets/icons/QR Scan.svg',
+                  height: 24,
+                  width: 24,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.grey,
+                    BlendMode.srcIn,
                   ),
                 ),
-                activeIcon: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BarcodeScannerScreen(),
-                      ),
-                    );
-                  },
-                  child: SvgPicture.asset(
-                    'assets/icons/Qr Scan.svg',
-                    height: 24,
-                    width: 24,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
-                      BlendMode.srcIn,
-                    ),
+                activeIcon: SvgPicture.asset(
+                  'assets/icons/QR Scan.svg',
+                  height: 24,
+                  width: 24,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
                   ),
                 ),
                 label: 'Scan',
@@ -670,50 +265,5 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
-  }
-
-  // Helper widget to build information rows
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 120,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Helper method to format date
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

@@ -110,10 +110,13 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
   }
 
   Future<void> _scanFromGallery(BarcodeViewModel vm) async {
+    // Capture messenger reference before async operations
+    final messenger = ScaffoldMessenger.of(context);
+
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-    if (image != null) {
+    if (image != null && context.mounted) {
       try {
         final BarcodeCapture? capture = await _controller.analyzeImage(
           image.path,
@@ -126,15 +129,19 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
             await vm.fetchFoodInfo(code);
           }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No barcode found in the image.')),
-          );
+          if (context.mounted) {
+            messenger.showSnackBar(
+              const SnackBar(content: Text('No barcode found in the image.')),
+            );
+          }
         }
       } catch (e) {
         // Handle unsupported on simulator or other errors gracefully
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error scanning image: $e')));
+        if (context.mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text('Error scanning image: $e')),
+          );
+        }
       }
     }
   }
@@ -144,7 +151,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
 
     await showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Enter Barcode Manually'),
           content: TextField(
@@ -155,7 +162,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // close dialog
+                Navigator.of(dialogContext).pop(); // close dialog
               },
               child: const Text('Cancel'),
             ),
@@ -163,9 +170,13 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
               onPressed: () async {
                 final code = controller.text.trim();
                 if (code.isNotEmpty) {
-                  Navigator.of(context).pop(); // close dialog
-                  setState(() => _isScanning = false);
-                  await vm.fetchFoodInfo(code);
+                  // Capture navigator reference before async operation
+                  final navigator = Navigator.of(dialogContext);
+                  navigator.pop(); // close dialog
+                  if (context.mounted) {
+                    setState(() => _isScanning = false);
+                    await vm.fetchFoodInfo(code);
+                  }
                 }
               },
               child: const Text('Submit'),
@@ -369,17 +380,19 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     if (food == null) return;
 
     try {
-      // Get the current user and food log view model
+      // Capture provider references and navigator before async operations
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       final foodLogViewModel = Provider.of<FoodLogViewModel>(
         context,
         listen: false,
       );
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
 
       if (authViewModel.currentUser == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('User not logged in')));
+        messenger.showSnackBar(
+          const SnackBar(content: Text('User not logged in')),
+        );
         return;
       }
 
@@ -401,17 +414,17 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
       // Refresh today's calories
       await foodLogViewModel.fetchTodayCalories(authViewModel.currentUser!.id);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (context.mounted) {
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Food added to log successfully!'),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context);
+        navigator.pop();
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error adding food to log: $e'),

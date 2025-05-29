@@ -11,9 +11,13 @@ import 'package:caltrack/viewmodels/user_view_model.dart';
 import 'package:caltrack/theme/app_theme.dart';
 import 'package:caltrack/viewmodels/user_onboarding_viewmodel.dart';
 import 'package:caltrack/viewmodels/barcode_view_model.dart';
+import 'package:caltrack/services/logger_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize logger service
+  LoggerService().initialize();
 
   // Load environment variables before initializing Firebase
   await dotenv.load(fileName: ".env");

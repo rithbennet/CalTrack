@@ -73,7 +73,9 @@ class _LoginScreenState extends State<LoginScreen> {
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.symmetric(
-                  horizontal: 24.0, vertical: 20.0),
+                horizontal: 24.0,
+                vertical: 20.0,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -91,10 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 10.0),
                     const Text(
                       'Track your calories and meet your goals',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 16.0, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 48.0),
@@ -105,7 +104,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(12.0)),
                         ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 16.0,
+                          horizontal: 16.0,
+                        ),
                         prefixIcon: Icon(Icons.email_outlined),
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
                       ),
@@ -125,7 +127,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(12.0)),
                         ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 16.0,
+                          horizontal: 16.0,
+                        ),
                         prefixIcon: Icon(Icons.lock_outline),
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
                       ),
@@ -154,9 +159,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 )
                                 : const Text(
-                                    'Forgot Password?',
-                                    style: TextStyle(fontWeight: FontWeight.w500),
-                                  ),
+                                  'Forgot Password?',
+                                  style: TextStyle(fontWeight: FontWeight.w500),
+                                ),
                       ),
                     ),
                     if (authViewModel.errorMessage.isNotEmpty)
@@ -165,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
+                            color: Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Text(
@@ -180,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
+                            color: Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Text(
@@ -213,19 +218,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 )
                                 : const Text(
-                                    'Login',
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
+                                ),
                       ),
                     ),
                     const SizedBox(height: 24.0),
                     Row(
                       children: const [
                         Expanded(
-                          child: Divider(
-                            thickness: 1,
-                            color: Colors.grey,
-                          ),
+                          child: Divider(thickness: 1, color: Colors.grey),
                         ),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -238,10 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         Expanded(
-                          child: Divider(
-                            thickness: 1,
-                            color: Colors.grey,
-                          ),
+                          child: Divider(thickness: 1, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -258,7 +260,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           foregroundColor: Colors.black87,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            side: const BorderSide(color: Colors.grey, width: 1),
+                            side: const BorderSide(
+                              color: Colors.grey,
+                              width: 1,
+                            ),
                           ),
                           elevation: 0,
                         ),
@@ -278,7 +283,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                         label: const Text(
                           'Sign in with Google',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),

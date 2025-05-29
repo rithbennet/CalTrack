@@ -63,7 +63,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.symmetric(
-                  horizontal: 24.0, vertical: 20.0),
+                horizontal: 24.0,
+                vertical: 20.0,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -81,10 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 10.0),
                     const Text(
                       'Start tracking your calories today',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 16.0, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 36.0),
@@ -95,7 +94,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(12.0)),
                         ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 16.0,
+                          horizontal: 16.0,
+                        ),
                         prefixIcon: Icon(Icons.email_outlined),
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
                       ),
@@ -120,7 +122,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(12.0)),
                         ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 16.0,
+                          horizontal: 16.0,
+                        ),
                         prefixIcon: Icon(Icons.lock_outline),
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
                       ),
@@ -143,7 +148,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(12.0)),
                         ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 16.0,
+                          horizontal: 16.0,
+                        ),
                         prefixIcon: Icon(Icons.lock_outline),
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
                       ),
@@ -165,7 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
+                            color: Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Text(
@@ -198,19 +206,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 )
                                 : const Text(
-                                    'Register',
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  'Register',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
+                                ),
                       ),
                     ),
                     const SizedBox(height: 24.0),
                     Row(
                       children: const [
                         Expanded(
-                          child: Divider(
-                            thickness: 1,
-                            color: Colors.grey,
-                          ),
+                          child: Divider(thickness: 1, color: Colors.grey),
                         ),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -223,10 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         Expanded(
-                          child: Divider(
-                            thickness: 1,
-                            color: Colors.grey,
-                          ),
+                          child: Divider(thickness: 1, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -243,7 +248,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           foregroundColor: Colors.black87,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            side: const BorderSide(color: Colors.grey, width: 1),
+                            side: const BorderSide(
+                              color: Colors.grey,
+                              width: 1,
+                            ),
                           ),
                           elevation: 0,
                         ),
@@ -263,7 +271,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                         label: const Text(
                           'Sign in with Google',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
