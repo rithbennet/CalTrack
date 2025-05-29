@@ -45,7 +45,7 @@ class ProgressCardsCarousel extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  'My Plan\nFor Today',
+                  'Todays Goal',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,

@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:caltrack/viewmodels/auth_view_model.dart';
 import 'package:caltrack/viewmodels/user_view_model.dart';
 import 'package:caltrack/viewmodels/food_log_view_model.dart';
 import 'package:caltrack/view/profile_screen.dart';
-import 'barcode/barcode_scanner_screen.dart';
 // Import custom components
 import 'components/home/user_greeting_header.dart';
 import 'components/home/progress_cards_carousel.dart';
 import 'components/home/food_tracking_section.dart';
 import 'components/home/section_header.dart';
 import 'components/home/user_info_card.dart';
+import 'components/bottom_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -145,122 +144,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           // Bottom Navigation Bar
-          bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: Colors.black,
-            unselectedItemColor: Colors.grey,
-            selectedItemColor: Colors.white,
-            type: BottomNavigationBarType.fixed,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
+          bottomNavigationBar: BottomNavBar(
             currentIndex: 0, // Home screen is selected
             onTap: (index) {
-              switch (index) {
-                case 0:
-                  // Already on home screen, do nothing
-                  break;
-                case 1:
-                  // Search functionality - you can implement this later
-                  break;
-                case 2:
-                  // Scan functionality
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BarcodeScannerScreen(),
-                    ),
-                  );
-                  break;
-                case 3:
-                  // Files functionality - you can implement this later
-                  break;
-              }
+              BottomNavBar.handleNavigation(context, index, currentIndex: 0);
             },
-            items: [
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  'assets/icons/House Blank.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.grey,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                activeIcon: SvgPicture.asset(
-                  'assets/icons/House Blank.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  'assets/icons/search.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.grey,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                activeIcon: SvgPicture.asset(
-                  'assets/icons/search.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                label: 'Search',
-              ),
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  'assets/icons/QR Scan.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.grey,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                activeIcon: SvgPicture.asset(
-                  'assets/icons/QR Scan.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                label: 'Scan',
-              ),
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  'assets/icons/folder.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.grey,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                activeIcon: SvgPicture.asset(
-                  'assets/icons/folder.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                label: 'Files',
-              ),
-            ],
           ),
         );
       },
