@@ -23,15 +23,25 @@ class FoodItem {
 
   factory FoodItem.fromJson(Map<String, dynamic> json) {
     return FoodItem(
-      barcode: json['barcode'] ?? '',
+      barcode: json['barcode'] ?? 'N/A',
       name: json['name'] ?? 'Unknown',
-      calories: (json['calories'] ?? 0).toDouble(),
-      protein: (json['protein'] ?? 0).toDouble(),
-      carbohydrates: (json['carbohydrates'] ?? 0).toDouble(),
-      sugars: (json['sugars'] ?? 0).toDouble(),
-      fat: (json['fat'] ?? 0).toDouble(),
-      saturatedFat: (json['saturated_fat'] ?? 0).toDouble(),
-      servingSize: json['serving_size'] ?? 'per 100g',
+      calories: _parseDouble(json['calories']),
+      protein: _parseDouble(json['protein']),
+      carbohydrates: _parseDouble(json['carbohydrates']),
+      sugars: _parseDouble(json['sugars']),
+      fat: _parseDouble(json['fat']),
+      saturatedFat: _parseDouble(json['saturatedFat']),
+      servingSize: json['servingSize'] ?? 'per 100g',
     );
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      return double.tryParse(value) ?? 0.0;
+    }
+    return 0.0;
   }
 }

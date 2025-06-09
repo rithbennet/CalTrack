@@ -1,4 +1,5 @@
 import 'package:caltrack/viewmodels/food_log_view_model.dart';
+import 'package:caltrack/viewmodels/food_scanner_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -33,6 +34,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserOnboardingViewModel()),
         ChangeNotifierProvider(create: (_) => FoodLogViewModel()),
         ChangeNotifierProvider(create: (_) => BarcodeViewModel()),
+        ChangeNotifierProvider(create: (_) => FoodScannerViewModel()),
         // Add other providers here
       ],
       child: const MyApp(),

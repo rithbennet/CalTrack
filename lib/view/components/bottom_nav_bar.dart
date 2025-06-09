@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../barcode/barcode_scanner_screen.dart';
+import 'scanner_selection.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -18,7 +18,7 @@ class BottomNavBar extends StatelessWidget {
       showSelectedLabels: false,
       showUnselectedLabels: false,
       currentIndex: currentIndex,
-      onTap: onTap ?? _defaultOnTap,
+      onTap: onTap ?? (index) => _defaultOnTap(context, index),
       items: [
         BottomNavigationBarItem(
           icon: SvgPicture.asset(
@@ -84,9 +84,8 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  void _defaultOnTap(int index) {
-    // Default navigation behavior - can be overridden by providing onTap
-    // This is a fallback that doesn't require context
+  void _defaultOnTap(BuildContext context, int index) {
+    handleNavigation(context, index, currentIndex: currentIndex);
   }
 
   // Static method for common navigation logic
@@ -109,11 +108,8 @@ class BottomNavBar extends StatelessWidget {
         // Search functionality - you can implement this later
         break;
       case 2:
-        // Scan functionality
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const BarcodeScannerScreen()),
-        );
+        // Show scanner selection bottom sheet
+        ScannerSelectionBottomSheet.show(context);
         break;
       case 3:
         // Files functionality - you can implement this later
