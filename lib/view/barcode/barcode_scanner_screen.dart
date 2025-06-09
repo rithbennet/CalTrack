@@ -13,6 +13,7 @@ import '../components/barcode/barcode_serving_size_selector.dart';
 import '../components/barcode/barcode_action_buttons.dart';
 import '../components/barcode/barcode_manual_entry_dialog.dart';
 import '../components/scanner/scanner_constants.dart';
+import '../scanner/edit_food_entry_screen.dart';
 
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
@@ -124,6 +125,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
           BarcodeActionButtons(
             isLoading: _isAddingToLog,
             onLogFood: () => _addToFoodLog(barcodeVM),
+            onEditEntry: () => _editFoodEntry(context, barcodeVM),
             onScanAgain: () => _resetScanner(barcodeVM),
           ),
         ],
@@ -211,6 +213,84 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
       if (mounted) {
         setState(() => _isAddingToLog = false);
       }
+    }
+  }
+
+  Future<void> _editFoodEntry(
+    BuildContext context,
+    BarcodeViewModel barcodeVM,
+  ) async {
+    final food = barcodeVM.scannedFood;
+    if (food == null) return;
+
+    final result = await Navigator.of(context).push<FoodEntry>(
+      MaterialPageRoute(
+        builder:
+            (context) => EditFoodEntryScreen(
+              scannedFood: food,
+              initialServings: _selectedServings,
+            ),
+      ),
+    );
+
+    if (result != null && context.mounted) {
+      // User saved the edited entry, now add it to the food log
+      await _addEditedEntryToLog(context, result);
+    }
+  }
+
+  Future<void> _addEditedEntryToLog(
+    BuildContext context,
+    FoodEntry foodEntry,
+  ) async {
+    setState(() {
+      _isAddingToLog = true;
+    });
+
+    try {
+      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+      final foodLogViewModel = Provider.of<FoodLogViewModel>(
+        context,
+        listen: false,
+      );
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
+
+      if (authViewModel.currentUser == null) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('User not logged in'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        return;
+      }
+
+      await foodLogViewModel.addEntry(foodEntry);
+      await foodLogViewModel.fetchTodayCalories(authViewModel.currentUser!.id);
+
+      if (context.mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('Edited food added to log successfully!'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+        navigator.pop();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error adding food to log: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isAddingToLog = false;
+      });
     }
   }
 
