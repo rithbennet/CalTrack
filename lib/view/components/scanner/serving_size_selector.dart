@@ -15,17 +15,24 @@ class ServingSizeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Card(
       elevation: 2,
+      color: colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Serving Size',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 12),
             GestureDetector(
@@ -37,17 +44,20 @@ class ServingSizeSelector extends StatelessWidget {
                   horizontal: 12,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
+                  border: Border.all(color: colorScheme.outline),
                   borderRadius: BorderRadius.circular(8),
+                  color: colorScheme.surface,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '${_formatServing(selectedServings)} servings',
-                      style: const TextStyle(fontSize: 16),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
                     ),
-                    const Icon(Icons.arrow_drop_down),
+                    Icon(Icons.arrow_drop_down, color: colorScheme.onSurface),
                   ],
                 ),
               ),

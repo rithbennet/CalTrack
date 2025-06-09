@@ -14,24 +14,43 @@ class ScannerActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       children: [
         Expanded(
           child: ElevatedButton.icon(
             onPressed: isLoading ? null : onLogFood,
-            icon: Icon(
-              isLoading ? Icons.hourglass_empty : Icons.restaurant,
-              size: 20,
-            ),
+            icon:
+                isLoading
+                    ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colorScheme.onPrimary,
+                        ),
+                      ),
+                    )
+                    : Icon(
+                      Icons.restaurant,
+                      size: 20,
+                      color: colorScheme.onPrimary,
+                    ),
             label: Text(
               isLoading ? 'Adding...' : 'Log Food',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onPrimary,
+              ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[600],
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: Colors.grey[400],
-              disabledForegroundColor: Colors.grey[200],
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+              disabledBackgroundColor: colorScheme.primary.withOpacity(0.7),
+              disabledForegroundColor: colorScheme.onPrimary.withOpacity(0.7),
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -42,23 +61,25 @@ class ScannerActionButtons extends StatelessWidget {
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: ElevatedButton.icon(
+          child: OutlinedButton.icon(
             onPressed: isLoading ? null : onScanAgain,
             icon: const Icon(Icons.camera_alt, size: 20),
-            label: const Text(
+            label: Text(
               'Scan Again',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[100],
-              foregroundColor: Colors.grey[700],
-              disabledBackgroundColor: Colors.grey[300],
-              disabledForegroundColor: Colors.grey[500],
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colorScheme.primary,
+              disabledForegroundColor: colorScheme.onSurface.withValues(
+                alpha: 0.6,
+              ),
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              side: BorderSide(color: Colors.grey[300]!, width: 1),
+              side: BorderSide(color: colorScheme.primary, width: 1.5),
               minimumSize: const Size(0, 52),
             ),
           ),

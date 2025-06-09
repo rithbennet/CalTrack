@@ -43,14 +43,23 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Food Scanner'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        title: Text(
+          'AI Food Scanner',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
         elevation: 0,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Consumer<FoodScannerViewModel>(
         builder: (context, viewModel, child) {
           if (_selectedImage == null) {
@@ -158,7 +167,10 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
 
       if (authViewModel.currentUser == null) {
         messenger.showSnackBar(
-          const SnackBar(content: Text('User not logged in')),
+          SnackBar(
+            content: const Text('User not logged in'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
         return;
       }
@@ -178,9 +190,9 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
 
       if (context.mounted) {
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Food added to log successfully!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('Food added to log successfully!'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
         navigator.pop();
@@ -190,10 +202,14 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error adding food to log: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
+    } finally {
+      setState(() {
+        _isAddingToLog = false;
+      });
     }
   }
 

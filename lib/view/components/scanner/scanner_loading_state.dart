@@ -8,6 +8,9 @@ class ScannerLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       children: [
         if (selectedImage != null) ...[
@@ -31,20 +34,21 @@ class ScannerLoadingState extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const CircularProgressIndicator(),
+                CircularProgressIndicator(color: colorScheme.primary),
                 const SizedBox(height: 24),
                 Text(
                   'Analyzing your food...',
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'This may take a few seconds',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
                 ),
               ],
             ),

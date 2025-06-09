@@ -122,8 +122,10 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
           CameraPreview(_controller!)
         else
           Container(
-            color: Colors.black,
-            child: const Center(child: CircularProgressIndicator()),
+            color: colorScheme.surface,
+            child: Center(
+              child: CircularProgressIndicator(color: colorScheme.primary),
+            ),
           ),
 
         // Overlay with scan buttons
@@ -164,11 +166,11 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
                 width: 1,
               ),
             ),
-            child: const Text(
+            child: Text(
               'Position your food in the center and tap capture',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -236,6 +238,8 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
   }
 
   Widget _buildCaptureButton() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: _takePicture,
       child: Container(
@@ -243,26 +247,17 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
         height: 80,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white,
-          border: Border.all(
-            color: Theme.of(context).colorScheme.primary,
-            width: 4,
-          ),
+          color: colorScheme.surface,
+          border: Border.all(color: colorScheme.primary, width: 4),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(
-                context,
-              ).colorScheme.primary.withValues(alpha: 0.3),
+              color: colorScheme.primary.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Icon(
-          Icons.camera_alt,
-          size: 40,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        child: Icon(Icons.camera_alt, size: 40, color: colorScheme.primary),
       ),
     );
   }
@@ -272,6 +267,8 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
     required String label,
     required VoidCallback onPressed,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -282,13 +279,9 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
             height: 56,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Theme.of(
-                context,
-              ).colorScheme.surface.withValues(alpha: 0.8),
+              color: colorScheme.surface.withValues(alpha: 0.8),
               border: Border.all(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.3),
+                color: colorScheme.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
               boxShadow: [
@@ -299,21 +292,21 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 24),
+            child: Icon(icon, color: colorScheme.onSurface, size: 24),
           ),
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: colorScheme.onSurface,
             fontSize: 12,
             fontWeight: FontWeight.w500,
             shadows: [
               Shadow(
                 blurRadius: 2.0,
                 color: Colors.black54,
-                offset: Offset(0.5, 0.5),
+                offset: const Offset(0.5, 0.5),
               ),
             ],
           ),

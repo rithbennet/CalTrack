@@ -8,8 +8,12 @@ class NutritionInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Card(
       elevation: 2,
+      color: colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -18,29 +22,41 @@ class NutritionInfoCard extends StatelessWidget {
           children: [
             Text(
               'Nutritional Information (${food.servingSize})',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 12),
             _buildNutrientRow(
               'Calories',
               '${food.calories.toStringAsFixed(1)} kcal',
+              context,
             ),
             _buildNutrientRow(
               'Protein',
               '${food.protein.toStringAsFixed(1)} g',
+              context,
             ),
             _buildNutrientRow(
               'Carbohydrates',
               '${food.carbohydrates.toStringAsFixed(1)} g',
+              context,
             ),
             _buildNutrientRow(
               '  - Sugars',
               '${food.sugars.toStringAsFixed(1)} g',
+              context,
             ),
-            _buildNutrientRow('Fat', '${food.fat.toStringAsFixed(1)} g'),
+            _buildNutrientRow(
+              'Fat',
+              '${food.fat.toStringAsFixed(1)} g',
+              context,
+            ),
             _buildNutrientRow(
               '  - Saturated Fat',
               '${food.saturatedFat.toStringAsFixed(1)} g',
+              context,
             ),
           ],
         ),
@@ -48,7 +64,10 @@ class NutritionInfoCard extends StatelessWidget {
     );
   }
 
-  Widget _buildNutrientRow(String label, String value) {
+  Widget _buildNutrientRow(String label, String value, BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -56,13 +75,19 @@ class NutritionInfoCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 16,
+            style: theme.textTheme.bodyMedium?.copyWith(
               fontWeight:
                   label.startsWith('  ') ? FontWeight.normal : FontWeight.w500,
+              color: colorScheme.onSurface,
             ),
           ),
-          Text(value, style: const TextStyle(fontSize: 16)),
+          Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: colorScheme.primary,
+            ),
+          ),
         ],
       ),
     );

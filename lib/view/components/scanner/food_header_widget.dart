@@ -8,22 +8,26 @@ class FoodHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           food.name,
-          style: const TextStyle(
-            fontSize: 24,
+          style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: colorScheme.onSurface,
           ),
         ),
         if (food.barcode.isNotEmpty && food.barcode != 'N/A') ...[
           const SizedBox(height: 8),
           Text(
             'Barcode: ${food.barcode}',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
         ],
       ],
