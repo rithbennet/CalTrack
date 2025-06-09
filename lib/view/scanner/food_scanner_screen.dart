@@ -15,6 +15,7 @@ import '../components/scanner/nutrition_info_card.dart';
 import '../components/scanner/serving_size_selector.dart';
 import '../components/scanner/scanner_action_buttons.dart';
 import '../components/scanner/scanner_constants.dart';
+import 'edit_food_entry_screen.dart';
 
 class FoodScannerScreen extends StatefulWidget {
   final String? initialImagePath;
@@ -131,6 +132,7 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
           ScannerActionButtons(
             isLoading: _isAddingToLog,
             onLogFood: () => _addToFoodLog(context, viewModel),
+            onEditEntry: () => _editFoodEntry(context, viewModel),
             onScanAgain: _resetScanner,
           ),
         ],
@@ -192,6 +194,84 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: const Text('Food added to log successfully!'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+        navigator.pop();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error adding food to log: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isAddingToLog = false;
+      });
+    }
+  }
+
+  Future<void> _editFoodEntry(
+    BuildContext context,
+    FoodScannerViewModel viewModel,
+  ) async {
+    final food = viewModel.scannedFood;
+    if (food == null) return;
+
+    final result = await Navigator.of(context).push<FoodEntry>(
+      MaterialPageRoute(
+        builder:
+            (context) => EditFoodEntryScreen(
+              scannedFood: food,
+              initialServings: _selectedServings,
+            ),
+      ),
+    );
+
+    if (result != null && context.mounted) {
+      // User saved the edited entry, now add it to the food log
+      await _addEditedEntryToLog(context, result);
+    }
+  }
+
+  Future<void> _addEditedEntryToLog(
+    BuildContext context,
+    FoodEntry foodEntry,
+  ) async {
+    setState(() {
+      _isAddingToLog = true;
+    });
+
+    try {
+      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+      final foodLogViewModel = Provider.of<FoodLogViewModel>(
+        context,
+        listen: false,
+      );
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
+
+      if (authViewModel.currentUser == null) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('User not logged in'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        return;
+      }
+
+      await foodLogViewModel.addEntry(foodEntry);
+      await foodLogViewModel.fetchTodayCalories(authViewModel.currentUser!.id);
+
+      if (context.mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('Edited food added to log successfully!'),
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
