@@ -92,4 +92,32 @@ class FoodRepository {
     }
     return total;
   }
+
+  // Update a food entry
+  Future<void> updateFoodEntry(String userId, FoodEntry entry) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('calorie_entries')
+          .doc(entry.id)
+          .update({
+            'foodName': entry.name,
+            'servings': entry.servings,
+            'servingUnit': entry.servingUnit,
+            'caloriesPerServing': entry.caloriesPerServing,
+            'protein': entry.protein,
+            'carbs': entry.carbs,
+            'fat': entry.fat,
+            'totalCalories': entry.totalCalories,
+            'calories': entry.totalCalories, // Keep old field for compatibility
+            'notes': entry.notes ?? '',
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+      _logger.info('Updated food entry for user $userId: ${entry.name}');
+    } catch (e) {
+      _logger.error('Error updating food entry', e);
+      rethrow;
+    }
+  }
 }

@@ -4,6 +4,7 @@ import '../../models/food_entry.dart';
 import '../../viewmodels/food_log_view_model.dart';
 import '../../viewmodels/auth_view_model.dart';
 import 'add_food_screen.dart';
+import 'edit_food_entry_screen.dart';
 import '../../theme/app_theme.dart';
 import '../../services/logger_service.dart';
 
@@ -139,9 +140,31 @@ class _FoodLogScreenState extends State<FoodLogScreen> {
                         ),
                     ],
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: AppTheme.primary),
-                    onPressed: () => viewModel.removeEntry(entry),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: AppTheme.primary),
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => EditFoodLogEntryScreen(
+                                    existingEntry: entry,
+                                  ),
+                            ),
+                          );
+                          if (result is FoodEntry) {
+                            viewModel.updateEntry(result);
+                          }
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: AppTheme.primary),
+                        onPressed: () => viewModel.removeEntry(entry),
+                      ),
+                    ],
                   ),
                 ),
               );
