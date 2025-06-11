@@ -18,7 +18,7 @@ class CalorieGoalHeader extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [colorScheme.primary, colorScheme.primary.withOpacity(0.8)],
+          colors: [colorScheme.primary, colorScheme.primary.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -35,7 +35,7 @@ class CalorieGoalHeader extends StatelessWidget {
                 Text(
                   'Daily Calorie Target', // Changed from 'Daily Calorie Goal'
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onPrimary.withOpacity(0.9),
+                    color: colorScheme.onPrimary.withValues(alpha: 0.9),
                   ),
                 ),
                 Text(
@@ -51,7 +51,7 @@ class CalorieGoalHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: colorScheme.onPrimary.withOpacity(0.2),
+              color: colorScheme.onPrimary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
