@@ -96,11 +96,11 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surfaceA10,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: surfaceA10,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),

@@ -75,6 +75,16 @@ class FoodLogViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> updateEntry(FoodEntry entry) async {
+    if (userId != null && entry.id != null) {
+      await _foodRepository.updateFoodEntry(userId!, entry);
+      await fetchTodayCalories(
+        userId!,
+      ); // Refresh today's calories after update
+      // The stream listener will update _entries automatically
+    }
+  }
+
   Future<void> fetchTodayCalories(String userId) async {
     _todayCalories = await _foodRepository.getTodayCalories(userId);
     notifyListeners();
