@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'scanner_selection.dart';
+import '../search_screen.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -106,6 +107,10 @@ class BottomNavBar extends StatelessWidget {
         break;
       case 1:
         // Search functionality - you can implement this later
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchScreen()),
+        );
         break;
       case 2:
         // Show scanner selection bottom sheet
