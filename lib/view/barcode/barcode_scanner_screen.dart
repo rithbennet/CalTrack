@@ -162,13 +162,11 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
         context,
         listen: false,
       );
-      final navigator = Navigator.of(context);
-      final messenger = ScaffoldMessenger.of(context);
-
       if (authViewModel.currentUser == null) {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('User not logged in')),
-        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('User not logged in')));
         return;
       }
 
@@ -189,26 +187,24 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
       // Refresh today's calories
       await foodLogViewModel.fetchTodayCalories(authViewModel.currentUser!.id);
 
-      if (context.mounted) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: const Text('Food added to log successfully!'),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        navigator.pop();
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Food added to log successfully!'),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.of(context).pop();
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error adding food to log: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error adding food to log: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isAddingToLog = false);

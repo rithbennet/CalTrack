@@ -12,7 +12,7 @@ class ApiLoggerService {
       lineLength: 50,
       colors: true,
       printEmojis: true,
-      printTime: true,
+      dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
     ),
   );
 
@@ -22,7 +22,7 @@ class ApiLoggerService {
   int _failedRequests = 0;
   int _rateLimitedRequests = 0;
   DateTime? _lastRequestTime;
-  List<ApiRequestLog> _requestHistory = [];
+  final List<ApiRequestLog> _requestHistory = [];
 
   // Getters for statistics
   int get totalRequests => _totalRequests;

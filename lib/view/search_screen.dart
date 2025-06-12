@@ -174,51 +174,58 @@ class _SearchScreenState extends State<SearchScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.analytics, color: Colors.blue),
-            SizedBox(width: 8),
-            Text('API Statistics'),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildStatRow('Total Requests', '${stats['totalRequests']}'),
-              _buildStatRow('Successful', '${stats['successfulRequests']}'),
-              _buildStatRow('Failed', '${stats['failedRequests']}'),
-              _buildStatRow('Rate Limited', '${stats['rateLimitedRequests']}'),
-              _buildStatRow('Success Rate', '${stats['successRate'].toStringAsFixed(1)}%'),
-              if (stats['lastRequestTime'] != null) ...[
-                const Divider(),
-                Text(
-                  'Last Request: ${_formatTime(stats['lastRequestTime'])}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+      builder:
+          (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.analytics, color: Colors.blue),
+                SizedBox(width: 8),
+                Text('API Statistics'),
               ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildStatRow('Total Requests', '${stats['totalRequests']}'),
+                  _buildStatRow('Successful', '${stats['successfulRequests']}'),
+                  _buildStatRow('Failed', '${stats['failedRequests']}'),
+                  _buildStatRow(
+                    'Rate Limited',
+                    '${stats['rateLimitedRequests']}',
+                  ),
+                  _buildStatRow(
+                    'Success Rate',
+                    '${stats['successRate'].toStringAsFixed(1)}%',
+                  ),
+                  if (stats['lastRequestTime'] != null) ...[
+                    const Divider(),
+                    Text(
+                      'Last Request: ${_formatTime(stats['lastRequestTime'])}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  _searchService.resetApiStatistics();
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('API statistics reset')),
+                  );
+                },
+                child: const Text('Reset'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _searchService.resetApiStatistics();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('API statistics reset')),
-              );
-            },
-            child: const Text('Reset'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -305,7 +312,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.1),
+                        ).colorScheme.primary.withValues(alpha: .1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
