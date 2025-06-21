@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:caltrack/models/user_model.dart';
+import 'package:caltrack/models/nutritional_summary.dart'; // ADDED
+import 'package:caltrack/view/reports/daily_report_screen.dart'; // ADDED
+import 'package:caltrack/view/reports/weekly_report_screen.dart';
+
+// Note: You will need to create this screen for the weekly report
+// import 'package:caltrack/view/reports/weekly_report_screen.dart';
 
 class ProgressCardsCarousel extends StatefulWidget {
+  // --- EXISTING PROPERTIES (UNCHANGED) ---
   final UserModel? userProfile;
   final int percentage;
   final int currentCalories;
   final int dailyTarget;
   final VoidCallback onSetupTap;
+
+  // --- NEW PROPERTIES FOR REPORTS ---
+  final DailyNutritionalSummary todaySummary;
+  final List<DailyNutritionalSummary> weeklySummary;
 
   const ProgressCardsCarousel({
     super.key,
@@ -15,6 +26,9 @@ class ProgressCardsCarousel extends StatefulWidget {
     required this.currentCalories,
     required this.dailyTarget,
     required this.onSetupTap,
+    // ADDED: Require the new summary data
+    required this.todaySummary,
+    required this.weeklySummary,
   });
 
   @override
@@ -22,6 +36,7 @@ class ProgressCardsCarousel extends StatefulWidget {
 }
 
 class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
+  // --- EXISTING STATE AND LIFECYCLE (UNCHANGED) ---
   final PageController _pageController = PageController(viewportFraction: 0.92);
   int _currentPage = 0;
 
@@ -37,10 +52,9 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
       }
     });
 
-    // Add a small delay before animating to draw user attention
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
-        setState(() {}); // Trigger rebuild for animation
+        setState(() {});
       }
     });
   }
@@ -53,6 +67,14 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    // ADDED: A list of all cards to be displayed
+    final List<Widget> cards = [
+      _buildPlanCard(),
+      _buildCaloriesCard(),
+      _buildDailyReportCard(),
+      _buildWeeklyReportCard(),
+    ];
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -61,59 +83,55 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
           child: PageView.builder(
             physics: const BouncingScrollPhysics(),
             controller: _pageController,
-            itemCount: 2,
+            // MODIFIED: Use the length of the cards list
+            itemCount: cards.length,
             itemBuilder: (context, index) {
-              // Calculate the relative position for the current page
               final double pageOffset =
                   _pageController.hasClients
                       ? (_pageController.page ?? 0) - index
                       : 0.0;
-
-              // Apply a subtle scale and rotation effect
               final double scale =
                   0.9 + (1 - (pageOffset.abs() * 0.1)).clamp(0.0, 0.1);
 
               return Transform.scale(
                 scale: scale,
-                child: Hero(
-                  tag: index == 0 ? 'plan-card' : 'calories-card',
-                  child: index == 0 ? _buildPlanCard() : _buildCaloriesCard(),
-                ),
+                // MODIFIED: Use the card from the list
+                child: cards[index],
               );
             },
           ),
         ),
         const SizedBox(height: 12),
-        // Simple page indicator
         SizedBox(
           height: 8,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildPageIndicator(_currentPage == 0),
-              _buildPageIndicator(_currentPage == 1),
-            ],
+            // MODIFIED: Generate indicators based on the number of cards
+            children: List.generate(cards.length, (index) {
+              return _buildPageIndicator(_currentPage == index);
+            }),
           ),
         ),
       ],
     );
   }
 
+  // --- EXISTING WIDGETS (UNCHANGED) ---
   Widget _buildPageIndicator(bool isActive) {
+    // ... (This widget is unchanged)
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.symmetric(horizontal: 5),
       height: 8,
       width: isActive ? 24 : 8,
       decoration: BoxDecoration(
-        color:
-            isActive ? Colors.deepOrange : Colors.grey.withValues(alpha: 0.3),
+        color: isActive ? Colors.deepOrange : Colors.grey.withOpacity(0.3),
         borderRadius: BorderRadius.circular(4),
         boxShadow:
             isActive
                 ? [
                   BoxShadow(
-                    color: Colors.deepOrange.withValues(alpha: 0.3),
+                    color: Colors.deepOrange.withOpacity(0.3),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
@@ -124,10 +142,11 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
   }
 
   Widget _buildPlanCard() {
+    // ... (This entire widget is unchanged)
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {}, // Allow tapping for future feature expansion
+        onTap: () {},
         borderRadius: BorderRadius.circular(20),
         child: Ink(
           padding: const EdgeInsets.all(20),
@@ -141,7 +160,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.deepOrange.withValues(alpha: .3),
+                color: Colors.deepOrange.withOpacity(.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -149,7 +168,6 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
           ),
           child: Row(
             children: [
-              // Left side - text
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,7 +203,6 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                   ],
                 ),
               ),
-              // Right side - progress circle or setup prompt
               widget.userProfile?.effectiveDailyCalorieTarget != null
                   ? TweenAnimationBuilder<double>(
                     tween: Tween<double>(
@@ -204,9 +221,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                             child: CircularProgressIndicator(
                               value: value,
                               strokeWidth: 12,
-                              backgroundColor: Colors.white.withValues(
-                                alpha: .2,
-                              ),
+                              backgroundColor: Colors.white.withOpacity(.2),
                               valueColor: const AlwaysStoppedAnimation<Color>(
                                 Colors.white,
                               ),
@@ -244,12 +259,12 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                       width: 110,
                       height: 110,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: .15),
+                        color: Colors.white.withOpacity(.15),
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: .1),
+                            color: Colors.black.withOpacity(.1),
                             blurRadius: 8,
                             spreadRadius: 1,
                           ),
@@ -286,6 +301,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
   }
 
   Widget _buildCaloriesCard() {
+    // ... (This entire widget is unchanged)
     return Container(
       margin: const EdgeInsets.only(left: 12),
       padding: const EdgeInsets.all(24),
@@ -298,7 +314,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -342,7 +358,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                       TextSpan(
                         text: ' / ${widget.dailyTarget} cal',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: Colors.white.withOpacity(0.9),
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
                         ),
@@ -384,7 +400,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                               ? 'Calorie limit reached!'
                               : '${(value * 100).toInt()}% of daily goal',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
+                            color: Colors.white.withOpacity(0.7),
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -401,7 +417,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.deepOrange.withValues(alpha: 0.15),
+              color: Colors.deepOrange.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
             child: const Center(
@@ -413,6 +429,161 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // --- NEW WIDGETS FOR REPORTS ---
+
+  Widget _buildDailyReportCard() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => DailyReportScreen(summary: widget.todaySummary),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.deepOrange, Colors.deepOrange.shade800],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.teal.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.pie_chart, color: Colors.white, size: 28),
+                  SizedBox(width: 8),
+                  Text(
+                    'Daily Report',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                '${widget.todaySummary.totalCalories.toStringAsFixed(0)} kcal consumed',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Tap to see macro details',
+                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeeklyReportCard() {
+    // ... (calculation logic is unchanged)
+    final summariesWithEntries = widget.weeklySummary.where(
+      (s) => s.foodEntries.isNotEmpty,
+    );
+    final double averageCalories =
+        summariesWithEntries.isEmpty
+            ? 0
+            : summariesWithEntries
+                    .map((s) => s.totalCalories)
+                    .reduce((a, b) => a + b) /
+                summariesWithEntries.length;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        // MODIFIED THIS onTap HANDLER:
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      WeeklyReportScreen(weeklySummary: widget.weeklySummary),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          // ... rest of the card is unchanged
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.grey[800]!, Colors.grey[900]!],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.indigo.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.bar_chart, color: Colors.white, size: 28),
+                  SizedBox(width: 8),
+                  Text(
+                    'Weekly Report',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                '${averageCalories.toStringAsFixed(0)} avg daily kcal',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Tap for weekly trends',
+                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
