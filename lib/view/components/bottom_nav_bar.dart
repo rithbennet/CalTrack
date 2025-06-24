@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'scanner_selection.dart';
 import '../search_screen.dart';
+import '../reports/reports_selection_screen.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -117,7 +118,11 @@ class BottomNavBar extends StatelessWidget {
         ScannerSelectionBottomSheet.show(context);
         break;
       case 3:
-        // Files functionality - you can implement this later
+        // Navigate to Reports Selection Screen
+        Navigator.push(
+          context, 
+          MaterialPageRoute(builder: (context) => const ReportsSelectionScreen()),
+        );
         break;
     }
   }
