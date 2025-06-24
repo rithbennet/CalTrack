@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Basic timestamp validation
+    function hasValidTimestamps(resource) {
+      return resource.data.createdAt is timestamp &&
+             resource.data.updatedAt is timestamp;
+    }
+    
+    function hasValidUpdatedAt(resource) {
+      return resource.data.updatedAt is timestamp;
+    }
+    
+    // Allow read access to connection test documents but restrict writes to authenticated users
+    match /connection_test/{document} {
+      allow read: if true;
+      allow write: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+    
+    // User data - only accessible by the user themselves
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && hasValidTimestamps(request.resource);
+      allow update: if isOwner(userId) && hasValidUpdatedAt(request.resource);
+      allow delete: if isOwner(userId);
+      
+      // Calorie entries - nested under the user document
+      match /calorie_entries/{entryId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.createdAt is timestamp;
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
+      }
+    }
+    
+    // If you decide to implement a curated foods collection that's shared across users
+    match /curated_foods/{foodId} {
+      allow read: if isSignedIn(); // All signed-in users can read curated foods
+      allow write: if false; // Only admin can write (use Firebase Admin SDK for this)
+    }
+    
+    // If you implement a global food database shared by all users
+    match /foods/{foodId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Only admin can write
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
