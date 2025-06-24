@@ -5,8 +5,13 @@ import 'package:caltrack/models/nutritional_summary.dart';
 
 class WeeklyReportScreen extends StatelessWidget {
   final List<DailyNutritionalSummary> weeklySummary;
+  final double targetCalories; // Added this parameter for the daily target
 
-  const WeeklyReportScreen({super.key, required this.weeklySummary});
+  const WeeklyReportScreen({
+    super.key,
+    required this.weeklySummary,
+    this.targetCalories = 2000, // Default value of 2000 calories
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +61,42 @@ class WeeklyReportScreen extends StatelessWidget {
                 swapAnimationDuration: const Duration(milliseconds: 450),
                 swapAnimationCurve: Curves.easeOut,
               ),
+            ),
+            const SizedBox(height: 16),
+            // Add this legend
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.deepOrange,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text('Actual', style: TextStyle(color: Colors.grey[400])),
+                  ],
+                ),
+                const SizedBox(width: 24),
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade400,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text('Target', style: TextStyle(color: Colors.grey[400])),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 32),
             const Text(
@@ -129,12 +170,20 @@ class WeeklyReportScreen extends StatelessWidget {
       maxY: _calculateMaxY(),
       barTouchData: BarTouchData(
         touchTooltipData: BarTouchTooltipData(
-          // UPDATED THIS LINE: Replaced 'tooltipBgColor' with 'getTooltipColor'
           getTooltipColor: (group) => Colors.blueGrey,
           getTooltipItem: (group, groupIndex, rod, rodIndex) {
             final summary = weeklySummary[group.x.toInt()];
+            String label = '';
+
+            // Check which rod was touched
+            if (rodIndex == 0) {
+              label = '${summary.totalCalories.toStringAsFixed(0)}\nkcal';
+            } else {
+              label = '${targetCalories.toStringAsFixed(0)}\nkcal (target)';
+            }
+
             return BarTooltipItem(
-              '${summary.totalCalories.toStringAsFixed(0)}\nkcal',
+              label,
               const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             );
           },
@@ -178,24 +227,38 @@ class WeeklyReportScreen extends StatelessWidget {
             return BarChartGroupData(
               x: index,
               barRods: [
+                // First rod for actual calories
                 BarChartRodData(
                   toY: summary.totalCalories,
                   color: Colors.deepOrange,
-                  width: 20,
+                  width: 12, // Make bars narrower to fit two side by side
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                // Second rod for target calories
+                BarChartRodData(
+                  toY: targetCalories,
+                  color: Colors.green.shade400, // Different color for target
+                  width: 12,
                   borderRadius: BorderRadius.circular(6),
                 ),
               ],
+              // Add spacing between groups
+              barsSpace: 4,
             );
           }).toList(),
     );
   }
 
-  // Helper to set the chart's max Y value slightly above the highest bar
+  // Update the _calculateMaxY method to consider target calories too
   double _calculateMaxY() {
-    if (weeklySummary.isEmpty) return 2000; // Default value
+    if (weeklySummary.isEmpty)
+      return targetCalories * 1.2; // Default based on target
+
     final maxCalories = weeklySummary
         .map((s) => s.totalCalories)
         .reduce((a, b) => a > b ? a : b);
-    return maxCalories * 1.2; // 20% padding at the top
+
+    // Return whichever is higher: actual calories or target calories, with 20% padding
+    return (maxCalories > targetCalories ? maxCalories : targetCalories) * 1.2;
   }
 }
