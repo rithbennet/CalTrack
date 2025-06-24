@@ -436,68 +436,72 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
   // --- NEW WIDGETS FOR REPORTS ---
 
   Widget _buildDailyReportCard() {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) => DailyReportScreen(summary: widget.todaySummary),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Ink(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.deepOrange, Colors.deepOrange.shade800],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.teal.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+    return Container(
+      margin: const EdgeInsets.only(left: 12), // Added this margin
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) =>
+                        DailyReportScreen(summary: widget.todaySummary),
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(Icons.pie_chart, color: Colors.white, size: 28),
-                  SizedBox(width: 8),
-                  Text(
-                    'Daily Report',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+            );
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Ink(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.deepOrange, Colors.deepOrange.shade800],
               ),
-              const Spacer(),
-              Text(
-                '${widget.todaySummary.totalCalories.toStringAsFixed(0)} kcal consumed',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.teal.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Tap to see macro details',
-                style: TextStyle(color: Colors.white.withOpacity(0.7)),
-              ),
-            ],
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.pie_chart, color: Colors.white, size: 28),
+                    SizedBox(width: 8),
+                    Text(
+                      'Daily Report',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  '${widget.todaySummary.totalCalories.toStringAsFixed(0)} kcal consumed',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tap to see macro details',
+                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -505,7 +509,6 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
   }
 
   Widget _buildWeeklyReportCard() {
-    // ... (calculation logic is unchanged)
     final summariesWithEntries = widget.weeklySummary.where(
       (s) => s.foodEntries.isNotEmpty,
     );
@@ -517,71 +520,72 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                     .reduce((a, b) => a + b) /
                 summariesWithEntries.length;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        // MODIFIED THIS onTap HANDLER:
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      WeeklyReportScreen(weeklySummary: widget.weeklySummary),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Ink(
-          // ... rest of the card is unchanged
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.grey[800]!, Colors.grey[900]!],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.indigo.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+    return Container(
+      margin: const EdgeInsets.only(left: 12), // Added this margin
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) =>
+                        WeeklyReportScreen(weeklySummary: widget.weeklySummary),
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(Icons.bar_chart, color: Colors.white, size: 28),
-                  SizedBox(width: 8),
-                  Text(
-                    'Weekly Report',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+            );
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Ink(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.grey[800]!, Colors.grey[900]!],
               ),
-              const Spacer(),
-              Text(
-                '${averageCalories.toStringAsFixed(0)} avg daily kcal',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.indigo.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Tap for weekly trends',
-                style: TextStyle(color: Colors.white.withOpacity(0.7)),
-              ),
-            ],
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.bar_chart, color: Colors.white, size: 28),
+                    SizedBox(width: 8),
+                    Text(
+                      'Weekly Report',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  '${averageCalories.toStringAsFixed(0)} avg daily kcal',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tap for weekly trends',
+                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                ),
+              ],
+            ),
           ),
         ),
       ),
