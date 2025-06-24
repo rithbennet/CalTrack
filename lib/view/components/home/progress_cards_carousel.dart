@@ -125,13 +125,14 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
       height: 8,
       width: isActive ? 24 : 8,
       decoration: BoxDecoration(
-        color: isActive ? Colors.deepOrange : Colors.grey.withOpacity(0.3),
+        color:
+            isActive ? Colors.deepOrange : Colors.grey.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(4),
         boxShadow:
             isActive
                 ? [
                   BoxShadow(
-                    color: Colors.deepOrange.withOpacity(0.3),
+                    color: Colors.deepOrange.withValues(alpha: 0.3),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
@@ -160,7 +161,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.deepOrange.withOpacity(.3),
+                color: Colors.deepOrange.withValues(alpha: .3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -221,7 +222,9 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                             child: CircularProgressIndicator(
                               value: value,
                               strokeWidth: 12,
-                              backgroundColor: Colors.white.withOpacity(.2),
+                              backgroundColor: Colors.white.withValues(
+                                alpha: .2,
+                              ),
                               valueColor: const AlwaysStoppedAnimation<Color>(
                                 Colors.white,
                               ),
@@ -259,12 +262,12 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                       width: 110,
                       height: 110,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(.15),
+                        color: Colors.white.withValues(alpha: .15),
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(.1),
+                            color: Colors.black.withValues(alpha: .1),
                             blurRadius: 8,
                             spreadRadius: 1,
                           ),
@@ -314,7 +317,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -358,7 +361,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                       TextSpan(
                         text: ' / ${widget.dailyTarget} cal',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
                         ),
@@ -400,7 +403,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                               ? 'Calorie limit reached!'
                               : '${(value * 100).toInt()}% of daily goal',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -417,7 +420,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.deepOrange.withOpacity(0.15),
+              color: Colors.deepOrange.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: const Center(
@@ -463,7 +466,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.teal.withOpacity(0.3),
+                  color: Colors.teal.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -498,7 +501,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                 const SizedBox(height: 4),
                 Text(
                   'Tap to see macro details',
-                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
                 ),
               ],
             ),
@@ -547,7 +550,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.indigo.withOpacity(0.3),
+                  color: Colors.indigo.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -582,7 +585,7 @@ class _ProgressCardsCarouselState extends State<ProgressCardsCarousel> {
                 const SizedBox(height: 4),
                 Text(
                   'Tap for weekly trends',
-                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
                 ),
               ],
             ),

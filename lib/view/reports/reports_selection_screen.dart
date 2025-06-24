@@ -68,7 +68,7 @@ class ReportsSelectionScreen extends StatelessWidget {
       context,
       listen: false,
     );
-    final userViewModel = Provider.of<UserViewModel>(context, listen: false);
+    Provider.of<UserViewModel>(context, listen: false);
 
     Navigator.push(
       context,

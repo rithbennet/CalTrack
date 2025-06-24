@@ -58,8 +58,8 @@ class WeeklyReportScreen extends StatelessWidget {
               height: 200,
               child: BarChart(
                 _buildBarChartData(),
-                swapAnimationDuration: const Duration(milliseconds: 450),
-                swapAnimationCurve: Curves.easeOut,
+                duration: const Duration(milliseconds: 450),
+                curve: Curves.easeOut,
               ),
             ),
             const SizedBox(height: 16),
@@ -251,8 +251,9 @@ class WeeklyReportScreen extends StatelessWidget {
 
   // Update the _calculateMaxY method to consider target calories too
   double _calculateMaxY() {
-    if (weeklySummary.isEmpty)
+    if (weeklySummary.isEmpty) {
       return targetCalories * 1.2; // Default based on target
+    }
 
     final maxCalories = weeklySummary
         .map((s) => s.totalCalories)
