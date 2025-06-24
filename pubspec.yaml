@@ -49,6 +49,7 @@ dependencies:
   logger: ^2.5.0
   google_generative_ai: ^0.4.7
   camera: ^0.11.1
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

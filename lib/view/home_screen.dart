@@ -40,21 +40,27 @@ class _HomeScreenState extends State<HomeScreen> {
       userViewModel.loadUserProfile(authViewModel.currentUser!.id);
       // Initialize food entries stream for the current user
       foodLogViewModel.initializeForUser(authViewModel.currentUser!.id);
-      foodLogViewModel.fetchTodayCalories(
-        authViewModel.currentUser!.id,
-      ); // Fetch today's calories
+      // This call remains to support the existing `todayCalories` property
+      foodLogViewModel.fetchTodayCalories(authViewModel.currentUser!.id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<AuthViewModel, UserViewModel>(
-      builder: (context, authViewModel, userViewModel, child) {
-        // Get user data with fallbacks
+    // MODIFIED: Use Consumer3 to efficiently listen to all needed ViewModels
+    return Consumer3<AuthViewModel, UserViewModel, FoodLogViewModel>(
+      builder: (
+        context,
+        authViewModel,
+        userViewModel,
+        foodLogViewModel,
+        child,
+      ) {
+        // Get user data with fallbacks (Unchanged)
         final currentUser = authViewModel.currentUser;
         final userProfile = userViewModel.userProfile;
 
-        // Get username and ensure it's not too long
+        // Get username and ensure it's not too long (Unchanged)
         String userName =
             userProfile?.displayName ??
             currentUser?.displayName ??
@@ -62,7 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? currentUser.email.split('@').first
                 : 'User');
 
-        // Limit username length to prevent layout issues
         const int maxUsernameLength = 15;
         if (userName.length > maxUsernameLength) {
           userName = '${userName.substring(0, maxUsernameLength)}...';
@@ -70,11 +75,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final greeting = userViewModel.getGreeting();
 
-        // Get actual calorie target from user profile
+        // Get actual calorie target from user profile (Unchanged)
         final dailyTarget = userProfile?.effectiveDailyCalorieTarget ?? 2000;
-        final foodLogViewModel = Provider.of<FoodLogViewModel>(context);
+        // Using the existing `todayCalories` property as requested (Unchanged)
         final currentCalories = foodLogViewModel.todayCalories;
         final percentage = ((currentCalories / dailyTarget) * 100).round();
+
+        // ADDED: Get the new summary data from the FoodLogViewModel
+        final todaySummary = foodLogViewModel.todaySummary;
+        final weeklySummary = foodLogViewModel.weeklySummary;
 
         return Scaffold(
           backgroundColor: Colors.black87,
@@ -86,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // User greeting section with avatar - Now using component
+                    // User greeting section with avatar (Unchanged)
                     UserGreetingHeader(
                       greeting: greeting,
                       userName: userName,
@@ -103,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Swipable cards - Now using component
+                    // MODIFIED: Pass the new summary data to the carousel
                     ProgressCardsCarousel(
                       userProfile: userProfile,
                       percentage: percentage,
@@ -117,20 +126,23 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         );
                       },
+                      // ADDED: Pass the new required parameters
+                      todaySummary: todaySummary,
+                      weeklySummary: weeklySummary,
                     ),
 
                     const SizedBox(height: 32),
 
-                    // Food Tracking Section - Using component
+                    // Food Tracking Section (Unchanged)
                     const FoodTrackingSection(),
 
                     const SizedBox(height: 32),
 
-                    // User Profile Section - Using components
+                    // User Profile Section (Unchanged)
                     const SectionHeader(title: 'Profile Information'),
                     const SizedBox(height: 16),
 
-                    // User Info Card - Using component
+                    // User Info Card (Unchanged)
                     UserInfoCard(
                       currentUser: currentUser,
                       userProfile: userProfile,
@@ -143,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Bottom Navigation Bar
+          // Bottom Navigation Bar (Unchanged)
           bottomNavigationBar: BottomNavBar(
             currentIndex: 0, // Home screen is selected
             onTap: (index) {
