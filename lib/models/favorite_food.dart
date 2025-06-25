@@ -1,4 +1,4 @@
-class CuratedFoodItem {
+class FavoriteFood {
   final String id;
   final String name;
   final String brand;
@@ -10,10 +10,10 @@ class CuratedFoodItem {
   final double fat;
   final List<String> tags;
   final String category;
-  final double rating;
-  final int reviewCount;
+  final DateTime dateAdded;
+  final String userId;
 
-  CuratedFoodItem({
+  FavoriteFood({
     required this.id,
     required this.name,
     required this.brand,
@@ -25,13 +25,13 @@ class CuratedFoodItem {
     required this.fat,
     required this.tags,
     required this.category,
-    required this.rating,
-    required this.reviewCount,
+    required this.dateAdded,
+    required this.userId,
   });
 
-  factory CuratedFoodItem.fromMap(Map<String, dynamic> map) {
+  factory FavoriteFood.fromMap(Map<String, dynamic> map) {
     try {
-      return CuratedFoodItem(
+      final favoriteFood = FavoriteFood(
         id: map['id'] ?? '',
         name: (map['name'] ?? '').toString().trim(),
         brand: (map['brand'] ?? '').toString().trim(),
@@ -43,14 +43,20 @@ class CuratedFoodItem {
         fat: _parseDoubleSafely(map['fat'], 0.0),
         tags: _parseStringList(map['tags']),
         category: (map['category'] ?? 'other').toString().trim(),
-        rating: _parseDoubleSafely(map['rating'], 0.0),
-        reviewCount: _parseIntSafely(map['reviewCount'], 0),
+        dateAdded: _parseDateTimeSafely(map['dateAdded']),
+        userId: map['userId'] ?? '',
       );
+
+      print(
+        'Successfully created FavoriteFood with name: ${favoriteFood.name}',
+      );
+      return favoriteFood;
     } catch (e) {
-      print('Error parsing CuratedFoodItem from map: $e');
+      print('Error parsing FavoriteFood from map: $e');
       print('Map data: $map');
+      print('Stack trace: ${StackTrace.current}');
       // Return a safe default item
-      return CuratedFoodItem(
+      return FavoriteFood(
         id: map['id'] ?? '',
         name: 'Unknown Food',
         brand: '',
@@ -62,10 +68,28 @@ class CuratedFoodItem {
         fat: 0.0,
         tags: [],
         category: 'other',
-        rating: 0.0,
-        reviewCount: 0,
+        dateAdded: DateTime.now(),
+        userId: map['userId'] ?? '',
       );
     }
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'brand': brand,
+      'caloriesPerServing': caloriesPerServing,
+      'servingUnit': servingUnit,
+      'servingSize': servingSize,
+      'protein': protein,
+      'carbs': carbs,
+      'fat': fat,
+      'tags': tags,
+      'category': category,
+      'dateAdded': dateAdded,
+      'userId': userId,
+    };
   }
 
   static int _parseIntSafely(dynamic value, int defaultValue) {
@@ -96,21 +120,32 @@ class CuratedFoodItem {
     return [];
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'brand': brand,
-      'caloriesPerServing': caloriesPerServing,
-      'servingUnit': servingUnit,
-      'servingSize': servingSize,
-      'protein': protein,
-      'carbs': carbs,
-      'fat': fat,
-      'tags': tags,
-      'category': category,
-      'rating': rating,
-      'reviewCount': reviewCount,
-    };
+  static DateTime _parseDateTimeSafely(dynamic value) {
+    try {
+      if (value == null) return DateTime.now();
+      if (value is DateTime) return value;
+
+      // Check for Firestore Timestamp by trying to call toDate()
+      if (value.runtimeType.toString().contains('Timestamp')) {
+        return value.toDate();
+      }
+
+      if (value is String) {
+        return DateTime.tryParse(value) ?? DateTime.now();
+      }
+
+      // If it has a toDate method, try to call it
+      try {
+        return value.toDate();
+      } catch (e) {
+        // If toDate() fails, return current time
+        return DateTime.now();
+      }
+    } catch (e) {
+      print(
+        'Error parsing DateTime: $e, value: $value, type: ${value.runtimeType}',
+      );
+      return DateTime.now();
+    }
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async'; // Add this import for Timer
-import '../viewmodels/user_view_model.dart';
 import '../viewmodels/food_log_view_model.dart';
 import '../viewmodels/auth_view_model.dart';
 import '../models/food_entry.dart';
@@ -9,8 +8,8 @@ import '../models/curated_food_item.dart';
 import '../services/food_search_service.dart';
 import 'components/search/search_bar_widget.dart';
 import 'components/search/food_search_results.dart';
-import 'components/search/calorie_goal_header.dart';
 import 'components/search/search_filters.dart';
+import 'components/search/custom_foods_tab.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -19,7 +18,9 @@ class SearchScreen extends StatefulWidget {
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends State<SearchScreen>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   final FoodSearchService _searchService = FoodSearchService();
 
@@ -33,9 +34,16 @@ class _SearchScreenState extends State<SearchScreen> {
   ); // Debounce delay
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     _debounceTimer?.cancel(); // Cancel timer when disposing
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -260,138 +268,153 @@ class _SearchScreenState extends State<SearchScreen> {
             tooltip: 'API Statistics',
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(icon: Icon(Icons.public), text: 'Community Foods'),
+            Tab(icon: Icon(Icons.restaurant_menu), text: 'My Custom Foods'),
+          ],
+        ),
       ),
       body: Column(
         children: [
-          // Calorie goal header
-          Consumer<UserViewModel>(
-            builder: (context, userViewModel, child) {
-              return CalorieGoalHeader(
-                dailyCalorieTarget:
-                    userViewModel.userProfile?.effectiveDailyCalorieTarget ??
-                    2000,
-              );
-            },
-          ),
-
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SearchBarWidget(
-              controller: _searchController,
-              onSearchChanged: _performSearch,
-              hintText: 'Search for foods (e.g., "chicken breast", "apple")',
-            ),
-          ),
-
-          // Search filters
-          SearchFilters(
-            selectedFilter: _selectedFilter,
-            onFilterChanged: _onFilterChanged,
-          ),
-
-          // Results count indicator
-          if (_searchResults.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Text(
-                    'Showing ${_searchResults.length} result${_searchResults.length == 1 ? '' : 's'}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  if (_searchResults.length == _searchLimit) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: .1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'Limited',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-
-          // Search results
+          // Tab content
           Expanded(
-            child:
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _searchResults.isEmpty &&
-                        _searchController.text.isNotEmpty
-                    ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search_off,
-                            size: 64,
-                            color: Colors.grey.shade400,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No foods found for "${_searchController.text}"',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Try different keywords or check your spelling',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    )
-                    : _searchResults.isEmpty
-                    ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.search, size: 64, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text(
-                            'Search for foods to add to your log',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Type at least 2 characters to start searching',
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    )
-                    : FoodSearchResults(
-                      searchResults: _searchResults,
-                      onAddFood: _addFoodToLog,
-                    ),
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Community Foods Tab
+                _buildCommunityFoodsTab(),
+
+                // Custom Foods Tab
+                const CustomFoodsTab(),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCommunityFoodsTab() {
+    return Column(
+      children: [
+        // Search bar
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SearchBarWidget(
+            controller: _searchController,
+            onSearchChanged: _performSearch,
+            hintText: 'Search for foods (e.g., "chicken breast", "apple")',
+          ),
+        ),
+
+        // Search filters
+        SearchFilters(
+          selectedFilter: _selectedFilter,
+          onFilterChanged: _onFilterChanged,
+        ),
+
+        // Results count indicator
+        if (_searchResults.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Text(
+                  'Showing ${_searchResults.length} result${_searchResults.length == 1 ? '' : 's'}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                if (_searchResults.length == _searchLimit) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: .1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Limited',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+
+        // Search results
+        Expanded(
+          child:
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _searchResults.isEmpty && _searchController.text.isNotEmpty
+                  ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No foods found for "${_searchController.text}"',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Try different keywords or check your spelling',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                  : _searchResults.isEmpty
+                  ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search, size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          'Search for foods to add to your log',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Type at least 2 characters to start searching',
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  )
+                  : FoodSearchResults(
+                    searchResults: _searchResults,
+                    onAddFood: _addFoodToLog,
+                  ),
+        ),
+      ],
     );
   }
 }

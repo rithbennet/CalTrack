@@ -8,6 +8,7 @@ import 'package:caltrack/view/profile_screen.dart';
 import 'components/home/user_greeting_header.dart';
 import 'components/home/progress_cards_carousel.dart';
 import 'components/home/food_tracking_section.dart';
+import 'components/home/favorite_foods_section.dart';
 import 'components/home/section_header.dart';
 import 'components/home/user_info_card.dart';
 import 'components/bottom_nav_bar.dart';
@@ -130,6 +131,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       todaySummary: todaySummary,
                       weeklySummary: weeklySummary,
                     ),
+
+                    const SizedBox(height: 32),
+
+                    // Favorite Foods Section
+                    const FavoriteFoodsSection(),
 
                     const SizedBox(height: 32),
 
