@@ -29,7 +29,7 @@ class EmptyStateWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: effectiveIconColor.withOpacity(0.1),
+              color: effectiveIconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(32),
             ),
             child: Icon(icon, size: 64, color: effectiveIconColor),
@@ -48,7 +48,7 @@ class EmptyStateWidget extends StatelessWidget {
             child: Text(
               subtitle,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant.withOpacity(0.8),
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
               ),
               textAlign: TextAlign.center,
             ),

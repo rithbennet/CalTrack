@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:logger/logger.dart';
 import '../models/curated_food_item.dart';
 
 class CustomFoodService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Logger _logger = Logger();
 
   // Add a custom food item for a user
   Future<void> addCustomFood(String userId, CuratedFoodItem food) async {
@@ -32,8 +34,8 @@ class CustomFoodService {
       foodData['createdAt'] = Timestamp.fromDate(now);
       foodData['updatedAt'] = Timestamp.fromDate(now);
 
-      print('Adding custom food to Firestore: ${food.name}');
-      print('Food data: $foodData');
+      _logger.i('Adding custom food to Firestore: ${food.name}');
+      _logger.d('Food data: $foodData');
 
       await _firestore
           .collection('users')
@@ -41,9 +43,9 @@ class CustomFoodService {
           .collection('custom_foods')
           .add(foodData);
 
-      print('Successfully added custom food to Firestore');
+      _logger.i('Successfully added custom food to Firestore');
     } catch (e) {
-      print('Error adding custom food: $e');
+      _logger.e('Error adding custom food: $e');
       rethrow;
     }
   }
@@ -61,15 +63,17 @@ class CustomFoodService {
             try {
               final data = doc.data();
               data['id'] = doc.id;
-              print(
+              _logger.d(
                 'Processing custom food doc: ${doc.id}, name: ${data['name']}',
               );
               final food = CuratedFoodItem.fromMap(data);
-              print('Created CuratedFoodItem: ${food.name}, id: ${food.id}');
+              _logger.d(
+                'Created CuratedFoodItem: ${food.name}, id: ${food.id}',
+              );
               return food;
             } catch (e) {
-              print('Error processing custom food document ${doc.id}: $e');
-              print('Document data: ${doc.data()}');
+              _logger.e('Error processing custom food document ${doc.id}: $e');
+              _logger.w('Document data: ${doc.data()}');
               // Return a minimal valid food item to prevent crashes
               return CuratedFoodItem(
                 id: doc.id,
@@ -136,7 +140,7 @@ class CustomFoodService {
 
       return filteredFoods;
     } catch (e) {
-      print('Error searching custom foods: $e');
+      _logger.e('Error searching custom foods: $e');
       return [];
     }
   }
@@ -154,7 +158,7 @@ class CustomFoodService {
           .doc(food.id)
           .update(foodData);
     } catch (e) {
-      print('Error updating custom food: $e');
+      _logger.e('Error updating custom food: $e');
       rethrow;
     }
   }
@@ -169,7 +173,7 @@ class CustomFoodService {
           .doc(foodId)
           .delete();
     } catch (e) {
-      print('Error deleting custom food: $e');
+      _logger.e('Error deleting custom food: $e');
       rethrow;
     }
   }
@@ -195,7 +199,7 @@ class CustomFoodService {
         return CuratedFoodItem.fromMap(data);
       }).toList();
     } catch (e) {
-      print('Error getting custom foods by category: $e');
+      _logger.e('Error getting custom foods by category: $e');
       return [];
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/web.dart';
 import '../../../models/curated_food_item.dart';
 
 class CompactFoodCard extends StatelessWidget {
@@ -27,7 +28,7 @@ class CompactFoodCard extends StatelessWidget {
           try {
             onTap();
           } catch (e) {
-            print('Error in CompactFoodCard onTap: $e');
+            Logger().e('Error in CompactFoodCard onTap: $e');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
             );
@@ -49,7 +50,7 @@ class CompactFoodCard extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.1),
+                        color: colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -114,7 +115,9 @@ class CompactFoodCard extends StatelessWidget {
                     Text(
                       'cal',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onPrimaryContainer.withOpacity(0.8),
+                        color: colorScheme.onPrimaryContainer.withValues(
+                          alpha: 0.8,
+                        ),
                       ),
                     ),
                   ],

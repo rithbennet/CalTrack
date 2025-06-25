@@ -1,3 +1,5 @@
+import 'package:logger/logger.dart';
+
 class FavoriteFood {
   final String id;
   final String name;
@@ -47,14 +49,17 @@ class FavoriteFood {
         userId: map['userId'] ?? '',
       );
 
-      print(
+      Logger().i(
         'Successfully created FavoriteFood with name: ${favoriteFood.name}',
       );
       return favoriteFood;
-    } catch (e) {
-      print('Error parsing FavoriteFood from map: $e');
-      print('Map data: $map');
-      print('Stack trace: ${StackTrace.current}');
+    } catch (e, stackTrace) {
+      Logger().e(
+        'Error parsing FavoriteFood from map: $e',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      Logger().w('Map data: $map');
       // Return a safe default item
       return FavoriteFood(
         id: map['id'] ?? '',
@@ -142,7 +147,7 @@ class FavoriteFood {
         return DateTime.now();
       }
     } catch (e) {
-      print(
+      Logger().e(
         'Error parsing DateTime: $e, value: $value, type: ${value.runtimeType}',
       );
       return DateTime.now();

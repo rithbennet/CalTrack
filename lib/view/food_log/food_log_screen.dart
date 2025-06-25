@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../../models/food_entry.dart';
 import '../../viewmodels/food_log_view_model.dart';
@@ -245,7 +246,7 @@ class _FoodEntryCardState extends State<_FoodEntryCard> {
         }
       }
     } catch (e) {
-      print('Error toggling favorite: $e');
+      Logger().e('Error toggling favorite: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

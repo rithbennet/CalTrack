@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:logger/logger.dart'; // <-- Add this import
 import '../../../models/curated_food_item.dart';
 import '../../../services/custom_food_service.dart';
 import '../../../viewmodels/auth_view_model.dart';
@@ -20,6 +21,7 @@ class CustomFoodsTab extends StatefulWidget {
 class _CustomFoodsTabState extends State<CustomFoodsTab> {
   final TextEditingController _searchController = TextEditingController();
   final CustomFoodService _customFoodService = CustomFoodService();
+  final Logger _logger = Logger(); // <-- Add logger instance
   String _selectedFilter = 'All';
 
   @override
@@ -62,7 +64,7 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
   }
 
   void _addFoodToLog(CuratedFoodItem foodItem) async {
-    print('Adding food to log: ${foodItem.name}, ID: ${foodItem.id}');
+    _logger.i('Adding food to log: ${foodItem.name}, ID: ${foodItem.id}');
 
     try {
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
@@ -72,7 +74,7 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
       );
 
       if (authViewModel.currentUser == null) {
-        print('Error: No authenticated user');
+        _logger.e('Error: No authenticated user');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -86,7 +88,7 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
 
       // Validate required fields
       if (foodItem.name.isEmpty) {
-        print('Error: Food name is empty');
+        _logger.e('Error: Food name is empty');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -99,7 +101,7 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
       }
 
       if (foodItem.servingUnit.isEmpty) {
-        print('Error: Serving unit is empty');
+        _logger.e('Error: Serving unit is empty');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -122,11 +124,11 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
         date: DateTime.now(),
       );
 
-      print('Created food entry: ${foodEntry.name}');
+      _logger.d('Created food entry: ${foodEntry.name}');
 
       await foodLogViewModel.addEntry(foodEntry);
 
-      print('Successfully added food entry to log');
+      _logger.i('Successfully added food entry to log');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -137,8 +139,11 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
         );
       }
     } catch (e, stackTrace) {
-      print('Error adding food to log: $e');
-      print('Stack trace: $stackTrace');
+      _logger.e(
+        'Error adding food to log: $e',
+        error: e,
+        stackTrace: stackTrace,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -156,13 +161,15 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
       MaterialPageRoute(builder: (_) => const CreateCustomFoodScreen()),
     );
 
-    if (result is CuratedFoodItem) {
+    if (result is CuratedFoodItem && mounted) {
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       if (authViewModel.currentUser != null) {
         await _customFoodService.addCustomFood(
           authViewModel.currentUser!.id,
           result,
         );
+
+        _logger.i('Custom food added: ${result.name}');
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -184,13 +191,15 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
       ),
     );
 
-    if (result is CuratedFoodItem) {
+    if (result is CuratedFoodItem && mounted) {
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       if (authViewModel.currentUser != null) {
         await _customFoodService.updateCustomFood(
           authViewModel.currentUser!.id,
           result,
         );
+
+        _logger.i('Custom food updated: ${result.name}');
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -225,13 +234,15 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
           ),
     );
 
-    if (confirmed == true) {
+    if (confirmed == true && mounted) {
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       if (authViewModel.currentUser != null) {
         await _customFoodService.deleteCustomFood(
           authViewModel.currentUser!.id,
           food.id,
         );
+
+        _logger.i('Custom food deleted: ${food.name}');
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -306,7 +317,7 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
               }
 
               if (snapshot.hasError) {
-                print('Custom foods error: ${snapshot.error}');
+                _logger.e('Custom foods error: ${snapshot.error}');
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -355,8 +366,8 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: colorScheme.primaryContainer.withOpacity(
-                              0.3,
+                            color: colorScheme.primaryContainer.withValues(
+                              alpha: 0.3,
                             ),
                             borderRadius: BorderRadius.circular(32),
                           ),
@@ -380,8 +391,8 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
                           child: Text(
                             'Create your first custom food item to get started with your personal recipe collection',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant.withOpacity(
-                                0.8,
+                              color: colorScheme.onSurfaceVariant.withValues(
+                                alpha: 0.8,
                               ),
                             ),
                             textAlign: TextAlign.center,
@@ -416,7 +427,7 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
+                            color: Colors.orange.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(32),
                           ),
                           child: Icon(
@@ -439,8 +450,8 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
                           child: Text(
                             'Try different keywords or create a new custom food that matches your search',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant.withOpacity(
-                                0.8,
+                              color: colorScheme.onSurfaceVariant.withValues(
+                                alpha: 0.8,
                               ),
                             ),
                             textAlign: TextAlign.center,
@@ -516,7 +527,7 @@ class _CustomFoodsTabState extends State<CustomFoodsTab> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: colorScheme.primary.withOpacity(0.1),
+                              color: colorScheme.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(

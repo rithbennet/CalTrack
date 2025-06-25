@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../../../models/favorite_food.dart';
 import '../../../services/favorite_food_service.dart';
@@ -67,7 +68,7 @@ class FavoriteFoodsSection extends StatelessWidget {
           stream: FavoriteFoodService().getFavoriteFoodsStream(userId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container(
+              return SizedBox(
                 height: 120,
                 child: const Center(child: CircularProgressIndicator()),
               );
@@ -78,9 +79,11 @@ class FavoriteFoodsSection extends StatelessWidget {
                 height: 120,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withOpacity(0.1),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.1,
+                  ),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                 ),
                 child: Center(
                   child: Column(
@@ -111,10 +114,12 @@ class FavoriteFoodsSection extends StatelessWidget {
                 height: 120,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withOpacity(0.1),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.1,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: colorScheme.outline.withOpacity(0.3),
+                    color: colorScheme.outline.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Center(
@@ -123,7 +128,7 @@ class FavoriteFoodsSection extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.star_border,
-                        color: Colors.amber.withOpacity(0.7),
+                        color: Colors.amber.withValues(alpha: 0.7),
                         size: 32,
                       ),
                       const SizedBox(height: 8),
@@ -208,7 +213,7 @@ class FavoriteFoodsSection extends StatelessWidget {
         }
       }
     } catch (e) {
-      print('Error adding favorite to log: $e');
+      Logger().e('Error adding favorite to log: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -235,7 +240,7 @@ class _FavoriteFoodCard extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
-      color: colorScheme.surfaceContainerHighest.withOpacity(0.1),
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),

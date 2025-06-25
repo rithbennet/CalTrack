@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:logger/logger.dart';
 import '../models/favorite_food.dart';
 import '../models/curated_food_item.dart';
 import '../models/food_entry.dart';
 
 class FavoriteFoodService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Logger _logger = Logger();
 
   // Add a food to favorites
   Future<void> addToFavorites(String userId, CuratedFoodItem foodItem) async {
@@ -57,8 +59,8 @@ class FavoriteFoodService {
       data['createdAt'] = Timestamp.fromDate(now);
       data['updatedAt'] = Timestamp.fromDate(now);
 
-      print('Adding favorite food to Firestore: ${foodItem.name}');
-      print('Data being sent: $data');
+      _logger.i('Adding favorite food to Firestore: ${foodItem.name}');
+      _logger.d('Data being sent: $data');
 
       await _firestore
           .collection('users')
@@ -66,9 +68,9 @@ class FavoriteFoodService {
           .collection('favorite_foods')
           .add(data);
 
-      print('Successfully added favorite food to Firestore');
+      _logger.i('Successfully added favorite food to Firestore');
     } catch (e) {
-      print('Error adding favorite food: $e');
+      _logger.e('Error adding favorite food: $e');
       rethrow;
     }
   }
@@ -79,11 +81,13 @@ class FavoriteFoodService {
     FoodEntry foodEntry,
   ) async {
     try {
-      print('=== Adding FoodEntry to favorites ===');
-      print('FoodEntry name: "${foodEntry.name}"');
-      print('FoodEntry id: "${foodEntry.id}"');
-      print('FoodEntry caloriesPerServing: ${foodEntry.caloriesPerServing}');
-      print('FoodEntry servingUnit: "${foodEntry.servingUnit}"');
+      _logger.i('=== Adding FoodEntry to favorites ===');
+      _logger.d('FoodEntry name: "${foodEntry.name}"');
+      _logger.d('FoodEntry id: "${foodEntry.id}"');
+      _logger.d(
+        'FoodEntry caloriesPerServing: ${foodEntry.caloriesPerServing}',
+      );
+      _logger.d('FoodEntry servingUnit: "${foodEntry.servingUnit}"');
 
       // Convert FoodEntry to CuratedFoodItem for compatibility
       final curatedFood = CuratedFoodItem(
@@ -102,10 +106,10 @@ class FavoriteFoodService {
         reviewCount: 0,
       );
 
-      print('Converted to CuratedFoodItem name: "${curatedFood.name}"');
+      _logger.d('Converted to CuratedFoodItem name: "${curatedFood.name}"');
       await addToFavorites(userId, curatedFood);
     } catch (e) {
-      print('Error adding food entry to favorites: $e');
+      _logger.e('Error adding food entry to favorites: $e');
       rethrow;
     }
   }
@@ -120,9 +124,9 @@ class FavoriteFoodService {
           .doc(favoriteId)
           .delete();
 
-      print('Successfully removed favorite food');
+      _logger.i('Successfully removed favorite food');
     } catch (e) {
-      print('Error removing favorite food: $e');
+      _logger.e('Error removing favorite food: $e');
       rethrow;
     }
   }
@@ -146,7 +150,7 @@ class FavoriteFoodService {
 
       return snapshot.docs.isNotEmpty;
     } catch (e) {
-      print('Error checking if food is favorite: $e');
+      _logger.e('Error checking if food is favorite: $e');
       return false;
     }
   }
@@ -173,14 +177,14 @@ class FavoriteFoodService {
       }
       return null;
     } catch (e) {
-      print('Error getting favorite ID: $e');
+      _logger.e('Error getting favorite ID: $e');
       return null;
     }
   }
 
   // Get all favorite foods for a user
   Stream<List<FavoriteFood>> getFavoriteFoodsStream(String userId) {
-    print('Getting favorites stream for user: $userId');
+    _logger.i('Getting favorites stream for user: $userId');
     return _firestore
         .collection('users')
         .doc(userId)
@@ -188,26 +192,26 @@ class FavoriteFoodService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-          print(
+          _logger.d(
             'Received ${snapshot.docs.length} favorite foods from Firestore',
           );
           return snapshot.docs.map((doc) {
             try {
               final data = doc.data();
               data['id'] = doc.id;
-              print('=== Processing favorite food doc ===');
-              print('Doc ID: ${doc.id}');
-              print('Raw data keys: ${data.keys.toList()}');
-              print(
+              _logger.d('=== Processing favorite food doc ===');
+              _logger.d('Doc ID: ${doc.id}');
+              _logger.d('Raw data keys: ${data.keys.toList()}');
+              _logger.d(
                 'Name field: ${data['name']} (type: ${data['name'].runtimeType})',
               );
-              print(
+              _logger.d(
                 'Brand field: ${data['brand']} (type: ${data['brand'].runtimeType})',
               );
-              print(
+              _logger.d(
                 'DateAdded field: ${data['dateAdded']} (type: ${data['dateAdded'].runtimeType})',
               );
-              print(
+              _logger.d(
                 'CreatedAt field: ${data['createdAt']} (type: ${data['createdAt'].runtimeType})',
               );
 
@@ -219,18 +223,18 @@ class FavoriteFoodService {
                 // Fallback to createdAt if dateAdded is missing
                 data['dateAdded'] = (data['createdAt'] as Timestamp).toDate();
               }
-              // Ensure dateAdded is not converted again in the model
-              // by setting it as a DateTime
 
-              print('Calling FavoriteFood.fromMap...');
+              _logger.d('Calling FavoriteFood.fromMap...');
               final favoriteFood = FavoriteFood.fromMap(data);
-              print(
+              _logger.i(
                 'Successfully created FavoriteFood: ${favoriteFood.name}, id: ${favoriteFood.id}',
               );
               return favoriteFood;
             } catch (e) {
-              print('Error processing favorite food document ${doc.id}: $e');
-              print('Document data: ${doc.data()}');
+              _logger.e(
+                'Error processing favorite food document ${doc.id}: $e',
+              );
+              _logger.e('Document data: ${doc.data()}');
               // Return a minimal valid favorite food item to prevent crashes
               return FavoriteFood(
                 id: doc.id,
@@ -273,7 +277,7 @@ class FavoriteFoodService {
         return FavoriteFood.fromMap(data);
       }).toList();
     } catch (e) {
-      print('Error getting recent favorites: $e');
+      _logger.e('Error getting recent favorites: $e');
       return [];
     }
   }

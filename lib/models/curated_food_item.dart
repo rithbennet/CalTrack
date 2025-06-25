@@ -1,3 +1,5 @@
+import 'package:logger/logger.dart';
+
 class CuratedFoodItem {
   final String id;
   final String name;
@@ -47,8 +49,12 @@ class CuratedFoodItem {
         reviewCount: _parseIntSafely(map['reviewCount'], 0),
       );
     } catch (e) {
-      print('Error parsing CuratedFoodItem from map: $e');
-      print('Map data: $map');
+      Logger().e(
+        'Error parsing CuratedFoodItem from map: $e',
+        error: e,
+        stackTrace: StackTrace.current,
+      );
+      Logger().e('Map data: $map');
       // Return a safe default item
       return CuratedFoodItem(
         id: map['id'] ?? '',
