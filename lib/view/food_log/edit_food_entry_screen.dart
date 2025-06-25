@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../../models/food_entry.dart';
 import '../components/food_form/food_form_pickers.dart';
 import '../components/food_form/form_section.dart';
@@ -139,167 +138,165 @@ class _EditFoodLogEntryScreenState extends State<EditFoodLogEntryScreen> {
           padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
-            child: CupertinoScrollbar(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  children: [
-                    // Food name section
-                    FormSection(
-                      title: 'Food Information',
-                      children: [
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Food Name',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator:
-                              (value) =>
-                                  value == null || value.trim().isEmpty
-                                      ? 'Enter a name'
-                                      : null,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  // Food name section
+                  FormSection(
+                    title: 'Food Information',
+                    children: [
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Food Name',
+                          border: OutlineInputBorder(),
                         ),
-                      ],
-                    ),
+                        validator:
+                            (value) =>
+                                value == null || value.trim().isEmpty
+                                    ? 'Enter a name'
+                                    : null,
+                      ),
+                    ],
+                  ),
 
-                    const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                    // Serving information section
-                    FormSection(
-                      title: 'Serving Information',
-                      children: [
-                        ServingSelector(
-                          servings: _servings,
-                          selectedUnit: _selectedServingUnit,
-                          onServingsChanged:
-                              (value) => setState(() => _servings = value),
-                          onUnitChanged:
-                              (value) =>
-                                  setState(() => _selectedServingUnit = value),
-                          customUnitController: _customUnitController,
-                          showCustomUnitField: _selectedServingUnit == 'Custom',
-                        ),
-                        const SizedBox(height: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Calories per Serving Unit',
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.w500,
-                              ),
+                  // Serving information section
+                  FormSection(
+                    title: 'Serving Information',
+                    children: [
+                      ServingSelector(
+                        servings: _servings,
+                        selectedUnit: _selectedServingUnit,
+                        onServingsChanged:
+                            (value) => setState(() => _servings = value),
+                        onUnitChanged:
+                            (value) =>
+                                setState(() => _selectedServingUnit = value),
+                        customUnitController: _customUnitController,
+                        showCustomUnitField: _selectedServingUnit == 'Custom',
+                      ),
+                      const SizedBox(height: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Calories per Serving Unit',
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
                             ),
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              controller: _caloriesController,
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                hintText: 'Enter calories',
-                                suffixText: 'cal',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                filled: true,
-                                fillColor: colorScheme.surfaceContainerHighest,
+                          ),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _caloriesController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              hintText: 'Enter calories',
+                              suffixText: 'cal',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Enter calories per serving';
-                                }
-                                final calories = int.tryParse(value);
-                                if (calories == null || calories <= 0) {
-                                  return 'Enter a valid number greater than 0';
-                                }
-                                return null;
-                              },
+                              filled: true,
+                              fillColor: colorScheme.surfaceContainerHighest,
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Macronutrients section
-                    FormSection(
-                      title: 'Macronutrients (per serving)',
-                      children: [
-                        macro.MacronutrientRow(
-                          protein: _protein,
-                          carbs: _carbs,
-                          fat: _fat,
-                          useClickableFields: true,
-                          onProteinTap:
-                              () => FoodFormPickers.showMacronutrientPicker(
-                                context: context,
-                                nutrientName: 'Protein',
-                                currentValue: _protein,
-                                onChanged:
-                                    (value) => setState(() => _protein = value),
-                              ),
-                          onCarbsTap:
-                              () => FoodFormPickers.showMacronutrientPicker(
-                                context: context,
-                                nutrientName: 'Carbs',
-                                currentValue: _carbs,
-                                onChanged:
-                                    (value) => setState(() => _carbs = value),
-                              ),
-                          onFatTap:
-                              () => FoodFormPickers.showMacronutrientPicker(
-                                context: context,
-                                nutrientName: 'Fat',
-                                currentValue: _fat,
-                                onChanged:
-                                    (value) => setState(() => _fat = value),
-                              ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Notes section
-                    FormSection(
-                      title: 'Notes (Optional)',
-                      children: [
-                        TextFormField(
-                          controller: _notesController,
-                          decoration: const InputDecoration(
-                            labelText: 'Add any notes about this food entry',
-                            border: OutlineInputBorder(),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Enter calories per serving';
+                              }
+                              final calories = int.tryParse(value);
+                              if (calories == null || calories <= 0) {
+                                return 'Enter a valid number greater than 0';
+                              }
+                              return null;
+                            },
                           ),
-                          maxLines: 3,
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
+                  ),
 
-                    const SizedBox(height: 32),
+                  const SizedBox(height: 16),
 
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colorScheme.primary,
-                          foregroundColor: colorScheme.onPrimary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                  // Macronutrients section
+                  FormSection(
+                    title: 'Macronutrients (per serving)',
+                    children: [
+                      macro.MacronutrientRow(
+                        protein: _protein,
+                        carbs: _carbs,
+                        fat: _fat,
+                        useClickableFields: true,
+                        onProteinTap:
+                            () => FoodFormPickers.showMacronutrientPicker(
+                              context: context,
+                              nutrientName: 'Protein',
+                              currentValue: _protein,
+                              onChanged:
+                                  (value) => setState(() => _protein = value),
+                            ),
+                        onCarbsTap:
+                            () => FoodFormPickers.showMacronutrientPicker(
+                              context: context,
+                              nutrientName: 'Carbs',
+                              currentValue: _carbs,
+                              onChanged:
+                                  (value) => setState(() => _carbs = value),
+                            ),
+                        onFatTap:
+                            () => FoodFormPickers.showMacronutrientPicker(
+                              context: context,
+                              nutrientName: 'Fat',
+                              currentValue: _fat,
+                              onChanged:
+                                  (value) => setState(() => _fat = value),
+                            ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Notes section
+                  FormSection(
+                    title: 'Notes (Optional)',
+                    children: [
+                      TextFormField(
+                        controller: _notesController,
+                        decoration: const InputDecoration(
+                          labelText: 'Add any notes about this food entry',
+                          border: OutlineInputBorder(),
                         ),
-                        child: Text(
-                          'Update Food Entry',
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        maxLines: 3,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Update Food Entry',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
