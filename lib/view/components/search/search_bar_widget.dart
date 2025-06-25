@@ -17,37 +17,44 @@ class SearchBarWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outline.withValues(alpha: .2)),
-      ),
-      child: TextField(
-        controller: controller,
-        onChanged: onSearchChanged,
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-          prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
-          suffixIcon:
-              controller.text.isNotEmpty
-                  ? IconButton(
-                    icon: Icon(
-                      Icons.clear,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    onPressed: () {
-                      controller.clear();
-                      onSearchChanged('');
-                    },
-                  )
-                  : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+    return TextField(
+      controller: controller,
+      onChanged: onSearchChanged,
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+        prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
+        suffixIcon:
+            controller.text.isNotEmpty
+                ? IconButton(
+                  icon: Icon(Icons.clear, color: colorScheme.onSurfaceVariant),
+                  onPressed: () {
+                    controller.clear();
+                    onSearchChanged('');
+                  },
+                )
+                : null,
+        filled: true,
+        fillColor: colorScheme.surfaceContainerHighest,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: colorScheme.outline.withValues(alpha: 0.2),
           ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: colorScheme.outline.withValues(alpha: 0.2),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.primary),
         ),
       ),
     );
